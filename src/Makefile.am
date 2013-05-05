@@ -16,10 +16,6 @@ pcmanfm_SOURCES = \
 	main-win.h \
 	tab-page.c \
 	tab-page.h \
-	desktop.c \
-	desktop.h \
-	wallpaper-manager.c \
-	wallpaper-manager.h \
 	volume-manager.c \
 	volume-manager.h \
 	pref.c \
@@ -33,7 +29,6 @@ pcmanfm_SOURCES = \
 
 EXTRA_DIST= \
 	main-win-ui.c \
-	desktop-ui.c \
 	$(NULL)
 
 pcmanfm_CFLAGS = \
