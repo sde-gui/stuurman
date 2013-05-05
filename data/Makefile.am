@@ -6,12 +6,12 @@ man_MANS=
 
 desktopdir=$(datadir)/applications
 desktop_in_files= \
-	pcmanfm.desktop.in \
+	stuurman.desktop.in \
 	$(NULL)
 desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
-defconfdir=$(sysconfdir)/xdg/pcmanfm/default
+defconfdir=$(sysconfdir)/xdg/stuurman/default
 defconf_DATA = \
 	$(NULL)
 

@@ -1,7 +1,7 @@
 NULL=
 
 # GtkBuilder UI definition files
-uidir=$(datadir)/pcmanfm/ui
+uidir=$(datadir)/stuurman/ui
 ui_in_files= \
 	about.glade \
 	pref.glade \
