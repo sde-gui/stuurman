@@ -5,7 +5,6 @@ uidir=$(datadir)/pcmanfm/ui
 ui_in_files= \
 	about.glade \
 	pref.glade \
-	desktop-pref.glade \
 	autorun.glade \
 	$(NULL)
 ui_DATA = $(ui_in_files:.glade=.ui)
