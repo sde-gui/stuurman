@@ -27,6 +27,10 @@
 #include <stdio.h>
 
 #include "app-config.h"
+#include "pcmanfm.h"
+
+#define APP_CONFIG_NAME "stuurman.conf"
+
 
 static void fm_app_config_finalize              (GObject *object);
 
@@ -219,19 +223,15 @@ void fm_app_config_load_from_profile(FmAppConfig* cfg, const char* name)
     const gchar * const *dirs, * const *dir;
     char *path;
     GKeyFile* kf = g_key_file_new();
-    const char* old_name = name;
 
     if(!name || !*name) /* if profile name is not provided, use 'default' */
-    {
         name = "default";
-        old_name = "pcmanfm"; /* for compatibility with old versions. */
-    }
 
     /* load system-wide settings */
     dirs = g_get_system_config_dirs();
     for(dir=dirs;*dir;++dir)
     {
-        path = g_build_filename(*dir, "pcmanfm", name, "pcmanfm.conf", NULL);
+        path = g_build_filename(*dir, config_app_name(), name, APP_CONFIG_NAME, NULL);
         if(g_key_file_load_from_file(kf, path, 0, NULL))
             fm_app_config_load_from_key_file(cfg, kf);
         g_free(path);
@@ -239,33 +239,9 @@ void fm_app_config_load_from_profile(FmAppConfig* cfg, const char* name)
 
     /* override system-wide settings with user-specific configuration */
 
-    /* For backward compatibility, try to load old config file and
-     * then migrate to new location */
-    path = g_strconcat(g_get_user_config_dir(), "/pcmanfm/", old_name, ".conf", NULL);
-    if(G_UNLIKELY(g_key_file_load_from_file(kf, path, 0, NULL)))
-    {
-        char* new_dir;
-        /* old config file is found, migrate to new profile format */
+    path = g_build_filename(g_get_user_config_dir(), config_app_name(), name, APP_CONFIG_NAME, NULL);
+    if(g_key_file_load_from_file(kf, path, 0, NULL))
         fm_app_config_load_from_key_file(cfg, kf);
-
-        /* create the profile dir */
-        new_dir = g_build_filename(g_get_user_config_dir(), "pcmanfm", name, NULL);
-        if(g_mkdir_with_parents(new_dir, 0700) == 0)
-        {
-            /* move the old config file to new location */
-            char* new_path = g_build_filename(new_dir, "pcmanfm.conf", NULL);
-            rename(path, new_path);
-            g_free(new_path);
-        }
-        g_free(new_dir);
-    }
-    else
-    {
-        g_free(path);
-        path = g_build_filename(g_get_user_config_dir(), "pcmanfm", name, "pcmanfm.conf", NULL);
-        if(g_key_file_load_from_file(kf, path, 0, NULL))
-            fm_app_config_load_from_key_file(cfg, kf);
-    }
     g_free(path);
 
     g_key_file_free(kf);
@@ -283,7 +259,7 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
     if(!name || !*name)
         name = "default";
 
-    dir_path = g_build_filename(g_get_user_config_dir(), "pcmanfm", name, NULL);
+    dir_path = g_build_filename(g_get_user_config_dir(), config_app_name(), name, NULL);
     if(g_mkdir_with_parents(dir_path, 0700) != -1)
     {
         GString* buf = g_string_sized_new(1024);
@@ -335,7 +311,7 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append_printf(buf, "sort_type=%d\n", cfg->sort_type);
         g_string_append_printf(buf, "sort_by=%d\n", cfg->sort_by);
 
-        path = g_build_filename(dir_path, "pcmanfm.conf", NULL);
+        path = g_build_filename(dir_path, APP_CONFIG_NAME, NULL);
         g_file_set_contents(path, buf->str, buf->len, NULL);
         g_string_free(buf, TRUE);
         g_free(path);

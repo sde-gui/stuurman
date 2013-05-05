@@ -47,6 +47,8 @@ void pcmanfm_save_config(gboolean immediate);
 
 void pcmanfm_open_folder_in_terminal(GtkWindow* parent, FmPath* dir);
 
+const char * config_app_name(void);
+
 G_END_DECLS
 
 #endif
