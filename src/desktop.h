@@ -41,7 +41,6 @@ G_BEGIN_DECLS
 typedef struct _FmDesktop           FmDesktop;
 typedef struct _FmDesktopClass      FmDesktopClass;
 typedef struct _FmDesktopItem       FmDesktopItem;
-typedef struct _FmBackgroundCache   FmBackgroundCache;
 
 struct _FmDesktop
 {

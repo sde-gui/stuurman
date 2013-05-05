@@ -18,6 +18,8 @@ pcmanfm_SOURCES = \
 	tab-page.h \
 	desktop.c \
 	desktop.h \
+	wallpaper-manager.c \
+	wallpaper-manager.h \
 	volume-manager.c \
 	volume-manager.h \
 	pref.c \

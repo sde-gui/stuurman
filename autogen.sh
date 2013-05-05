@@ -9,7 +9,7 @@ if [ "$AM_INSTALLED_VERSION" != "1.10" \
     -a "$AM_INSTALLED_VERSION" != "1.11" \
     -a "$AM_INSTALLED_VERSION" != "1.12" ];then
 	echo
-	echo "You must have automake > 1.10 or 1.11 installed."
+	echo "You must have automake 1.10...1.12 installed."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
 	exit 1
