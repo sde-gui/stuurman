@@ -23,7 +23,7 @@
 #  include <config.h>
 #endif
 
-#include <libfm/fm.h>
+#include <libsmfm/fm.h>
 
 #include "pcmanfm.h"
 

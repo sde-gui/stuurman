@@ -21,7 +21,7 @@
 # include <config.h>
 #endif
 
-#include <libfm/fm-gtk.h>
+#include <libsmfm/fm-gtk.h>
 #include <glib/gi18n.h>
 
 #include "app-config.h"
