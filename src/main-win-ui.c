@@ -168,7 +168,7 @@ static GtkActionEntry main_win_actions[]=
         {"AddBookmark", GTK_STOCK_ADD, N_("_Add To Bookmarks"), "<Ctrl>D", NULL, G_CALLBACK(on_add_bookmark)},
     {"ToolMenu", NULL, N_("Tool_s"), NULL, NULL, NULL},
         {"Term", "utilities-terminal", N_("Open Current Folder in _Terminal"), "F4", NULL, G_CALLBACK(on_open_in_terminal)},
-        {"AsRoot", GTK_STOCK_DIALOG_AUTHENTICATION, N_("Open Current Folder as _Root"), NULL, NULL, G_CALLBACK(on_open_as_root)},
+        {"AsRoot", GTK_STOCK_DIALOG_AUTHENTICATION, N_("Open Current Folder as _Root"), "<Ctrl>P", NULL, G_CALLBACK(on_open_as_root)},
         {"Search", GTK_STOCK_FIND, N_("Fin_d Files"), "<Ctrl><Shift>F", NULL, G_CALLBACK(on_search)},
     /* for accelerators */
     {"Location", NULL, NULL, "<Alt>d", NULL, G_CALLBACK(on_location)},

@@ -781,12 +781,12 @@ static void on_open_as_root(GtkAction* act, FmMainWin* win)
         fm_edit_preference(GTK_WINDOW(win), PREF_ADVANCED);
         return;
     }
-    /* FIXME: need to rename to pcmanfm when we reach stable release. */
-    if(fm_app_command_parse(app_config->su_cmd, su_cmd_opts, &cmd, "pcmanfm %U") == 0)
+
+    if(fm_app_command_parse(app_config->su_cmd, su_cmd_opts, &cmd, "stuurman %U") == 0)
     {
         /* no %s found so just append to it */
         g_free(cmd);
-        cmd = g_strconcat(app_config->su_cmd, " pcmanfm %U", NULL);
+        cmd = g_strconcat(app_config->su_cmd, " stuurman %U", NULL);
     }
     app = g_app_info_create_from_commandline(cmd, NULL, 0, NULL);
     g_free(cmd);

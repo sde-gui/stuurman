@@ -61,6 +61,8 @@ static char* window_role = NULL;
 
 static int n_pcmanfm_ref = 0;
 
+static const char * my_command = NULL;
+
 static GOptionEntry opt_entries[] =
 {
     /* options only acceptable by first pcmanfm instance. These options are not passed through IPC */
@@ -173,7 +175,7 @@ int main(int argc, char** argv)
     }
 
     /* ensure that there is only one instance of pcmanfm. */
-    inst.prog_name = "pcmanfm";
+    inst.prog_name = "stuurman";
     inst.cb = single_inst_cb;
     inst.opt_entries = opt_entries + 3;
     inst.screen_num = gdk_x11_get_default_screen();
@@ -456,4 +458,9 @@ char* pcmanfm_get_cache_dir(gboolean create)
 const char * config_app_name(void)
 {
     return "stuurman";
+}
+
+const char * pcmanfm_get_my_command(void)
+{
+    return my_command;
 }
