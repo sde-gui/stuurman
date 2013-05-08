@@ -201,6 +201,23 @@ static void update_view_menu(FmMainWin* win)
                                        fm_standard_view_get_mode(FM_STANDARD_VIEW(fv)));
 }
 
+static void update_spinner(FmMainWin* win)
+{
+    if(!win->current_page)
+        return;
+
+    if (win->current_page->loading)
+    {
+        gtk_spinner_start(GTK_SPINNER(win->spinner));
+        gtk_widget_show(win->spinner);
+    }
+    else
+    {
+        gtk_spinner_stop(GTK_SPINNER(win->spinner));
+        gtk_widget_hide(win->spinner);
+    }
+}
+
 static void on_folder_view_sort_changed(FmFolderView* fv, FmMainWin* win)
 {
     if(fv != win->folder_view)
@@ -451,7 +468,6 @@ static void on_side_pane_mode_changed(FmSidePane* sp, FmMainWin* win)
 static void fm_main_win_init(FmMainWin *win)
 {
     GtkBox *vbox;
-    GtkWidget *menubar;
     GtkToolItem *toolitem;
     GtkUIManager* ui;
     GtkActionGroup* act_grp;
@@ -507,7 +523,19 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(act),
                                  (app_config->side_pane_mode & FM_SP_HIDE) == 0);
 
-    menubar = gtk_ui_manager_get_widget(ui, "/menubar");
+    win->menubar = gtk_ui_manager_get_widget(ui, "/menubar");
+
+    /* append the menu item for the spinner */
+    GtkWidget * item = gtk_menu_item_new();
+    gtk_widget_set_sensitive(GTK_WIDGET(item), FALSE);
+    gtk_menu_item_set_right_justified(GTK_MENU_ITEM(item), TRUE);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menubar), item);
+    gtk_widget_show(item);
+
+    /* place the spinner into the menu item */
+    win->spinner = gtk_spinner_new();
+    gtk_container_add(GTK_CONTAINER(item), win->spinner);
+
     win->toolbar = GTK_TOOLBAR(gtk_ui_manager_get_widget(ui, "/toolbar"));
     /* FIXME: should make these optional */
     gtk_toolbar_set_icon_size(win->toolbar, GTK_ICON_SIZE_SMALL_TOOLBAR);
@@ -524,7 +552,7 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_menu_tool_button_set_menu(GTK_MENU_TOOL_BUTTON(toolitem), win->history_menu);
     g_signal_connect(toolitem, "show-menu", G_CALLBACK(on_show_history_menu), win);
 
-    gtk_box_pack_start( vbox, menubar, FALSE, TRUE, 0 );
+    gtk_box_pack_start( vbox, win->menubar, FALSE, TRUE, 0 );
     gtk_box_pack_start( vbox, GTK_WIDGET(win->toolbar), FALSE, TRUE, 0 );
 
     /* overall history */
@@ -1314,6 +1342,14 @@ static void on_tab_page_chdir(FmTabPage* page, FmPath* path, FmMainWin* win)
     active_directory_changed(win);
 }
 
+static void on_tab_page_loading_changed(FmTabPage* page, GParamSpec* ps, FmMainWin* win)
+{
+    if(page != win->current_page)
+        return;
+
+    update_spinner(win);
+}
+
 static void on_folder_view_filter_changed(FmFolderView* fv, FmMainWin* win)
 {
     GtkAction* act;
@@ -1374,6 +1410,7 @@ static void on_notebook_switch_page(GtkNotebook* nb, gpointer* new_page, guint n
     update_sort_menu(win);
     update_view_menu(win);
     update_statusbar(win);
+    update_spinner(win);
 
     /* FIXME: this does not work sometimes due to limitation of GtkNotebook.
      * So weird. After page switching with mouse button, GTK+ always tries
@@ -1387,6 +1424,8 @@ static void on_notebook_page_added(GtkNotebook* nb, GtkWidget* page, guint num, 
 
     g_signal_connect(tab_page, "notify::position",
                      G_CALLBACK(on_tab_page_splitter_pos_changed), win);
+    g_signal_connect(tab_page, "notify::loading",
+                     G_CALLBACK(on_tab_page_loading_changed), win);
     g_signal_connect(tab_page, "chdir",
                      G_CALLBACK(on_tab_page_chdir), win);
     g_signal_connect(tab_page, "status",
@@ -1426,6 +1465,8 @@ static void on_notebook_page_removed(GtkNotebook* nb, GtkWidget* page, guint num
     /* disconnect from previous active page */
     g_signal_handlers_disconnect_by_func(tab_page,
                                          on_tab_page_splitter_pos_changed, win);
+    g_signal_handlers_disconnect_by_func(tab_page,
+                                         on_tab_page_loading_changed, win);
     g_signal_handlers_disconnect_by_func(tab_page,
                                          on_tab_page_chdir, win);
     g_signal_handlers_disconnect_by_func(tab_page,

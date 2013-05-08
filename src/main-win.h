@@ -48,6 +48,8 @@ struct _FmMainWin
     GtkWindowGroup* win_group;
 
     GtkUIManager* ui;
+    GtkWidget *menubar;
+    GtkWidget *spinner;
     GtkToolbar* toolbar;
     FmPathEntry* location;
     GtkNotebook* notebook;

@@ -55,6 +55,13 @@ static GtkActionEntry folder_menu_actions[]=
 
 #define GET_MAIN_WIN(page)   FM_MAIN_WIN(gtk_widget_get_toplevel(GTK_WIDGET(page)))
 
+enum
+{
+  PROP_0,
+  PROP_LOADING,
+  N_PROPERTIES
+};
+
 enum {
     CHDIR,
     OPEN_DIR,
@@ -63,8 +70,11 @@ enum {
 };
 
 static guint signals[N_SIGNALS];
+static GParamSpec * props[N_PROPERTIES] = { NULL, };
 
 static void fm_tab_page_finalize(GObject *object);
+static void fm_tab_page_get_property (GObject * object, guint prop_id, GValue * value, GParamSpec * pspec);
+static void fm_tab_page_set_property(GObject * object, guint prop_id, const GValue * value, GParamSpec * pspec);
 static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path);
 static void on_folder_fs_info(FmFolder* folder, FmTabPage* page);
 static void on_folder_start_loading(FmFolder* folder, FmTabPage* page);
@@ -88,6 +98,10 @@ G_DEFINE_TYPE(FmTabPage, fm_tab_page, GTK_TYPE_HPANED)
 static void fm_tab_page_class_init(FmTabPageClass *klass)
 {
     GObjectClass *g_object_class = G_OBJECT_CLASS(klass);
+
+    g_object_class->get_property = fm_tab_page_get_property;
+    g_object_class->set_property = fm_tab_page_set_property;
+
 #if GTK_CHECK_VERSION(3, 0, 0)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
     widget_class->destroy = fm_tab_page_destroy;
@@ -129,6 +143,12 @@ static void fm_tab_page_class_init(FmTabPageClass *klass)
                     NULL, NULL,
                     g_cclosure_marshal_VOID__UINT_POINTER,
                     G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_POINTER);
+
+    props[PROP_LOADING] = g_param_spec_boolean(
+        "loading", "loading", "loading",
+        FALSE, G_PARAM_READABLE);
+
+    g_object_class_install_properties(g_object_class, N_PROPERTIES, props);
 }
 
 
@@ -146,6 +166,40 @@ static void fm_tab_page_finalize(GObject *object)
         g_free(page->status_text[i]);
 
     G_OBJECT_CLASS(fm_tab_page_parent_class)->finalize(object);
+}
+
+static void fm_tab_page_get_property (GObject * object, guint prop_id, GValue * value, GParamSpec * pspec)
+{
+    g_return_if_fail(FM_IS_TAB_PAGE(object));
+
+    FmTabPage *page = (FmTabPage *) object;
+
+    switch (prop_id)
+    {
+        case PROP_LOADING:
+            g_value_set_boolean(value, page->loading);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+static void fm_tab_page_set_property(GObject * object, guint prop_id, const GValue * value, GParamSpec * pspec)
+{
+    g_return_if_fail(FM_IS_TAB_PAGE(object));
+
+    FmTabPage * page = (FmTabPage *) object;
+
+    switch (prop_id)
+    {
+        case PROP_LOADING:
+          page->loading = g_value_get_boolean(value);
+          break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
 }
 
 static void free_folder(FmTabPage* page)
@@ -289,6 +343,9 @@ static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
     }
     else
         fm_folder_view_set_model(fv, NULL);
+
+    page->loading = TRUE;
+    g_object_notify_by_pspec(G_OBJECT(page), props[PROP_LOADING]);
 }
 
 static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
@@ -331,6 +388,9 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
 
     fm_unset_busy_cursor(GTK_WIDGET(page));
     /* g_debug("finish-loading"); */
+
+    page->loading = FALSE;
+    g_object_notify_by_pspec(G_OBJECT(page), props[PROP_LOADING]);
 }
 
 static void on_folder_unmount(FmFolder* folder, FmTabPage* page)
