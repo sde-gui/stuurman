@@ -209,3 +209,36 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
     g_free(dir_path);
 }
 
+
+GSList * read_list_from_file(gchar * file_name, gboolean ignore_comments)
+{
+    char * data;
+    g_file_get_contents(file_name, &data, NULL, NULL);
+    if (!data)
+        return NULL;
+
+    /* Split into lines and check each line. */
+
+    gchar ** lines = g_strsplit(data, "\n", 0);
+    g_free(data);
+
+    GSList * string_list = NULL;
+
+    gchar ** l;
+    if (lines) for (l = lines; *l; l++)
+    {
+        gchar * line = *l;
+        if (line[0] == 0 || (ignore_comments && line[0] == '#'))
+        {
+            g_free(line);
+        }
+        else
+        {
+            string_list = g_slist_prepend(string_list, line);
+        }
+    }
+
+    g_free(lines);
+
+    return g_slist_reverse(string_list);
+}

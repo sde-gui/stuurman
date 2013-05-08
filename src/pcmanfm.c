@@ -435,12 +435,22 @@ void pcmanfm_open_folder_in_terminal(GtkWindow* parent, FmPath* dir)
     }
 }
 
-char* pcmanfm_get_profile_dir(gboolean create)
+static char* pcmanfm_get_dir(const char * base, gboolean create)
 {
-    char* dir = g_build_filename(g_get_user_config_dir(), config_app_name(), profile ? profile : "default", NULL);
+    char* dir = g_build_filename(base, config_app_name(), profile ? profile : "default", NULL);
     if(create)
         g_mkdir_with_parents(dir, 0700);
     return dir;
+}
+
+char* pcmanfm_get_profile_dir(gboolean create)
+{
+    return pcmanfm_get_dir(g_get_user_config_dir(), create);
+}
+
+char* pcmanfm_get_cache_dir(gboolean create)
+{
+    return pcmanfm_get_dir(g_get_user_cache_dir(), create);
 }
 
 const char * config_app_name(void)

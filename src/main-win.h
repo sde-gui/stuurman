@@ -61,6 +61,7 @@ struct _FmMainWin
     GtkMenu* popup;
     /* <private> */
     FmNavHistory* nav_history;
+    GtkWidget* overall_nav_history_menu;
     guint statusbar_ctx;
     guint statusbar_ctx2;
     FmBookmarks* bookmarks;

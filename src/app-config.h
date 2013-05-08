@@ -105,6 +105,7 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf);
 
 void fm_app_config_save_profile(FmAppConfig* cfg, const char* name);
 
+GSList * read_list_from_file(gchar * file_name, gboolean ignore_comments);
 
 G_END_DECLS
 

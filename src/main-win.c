@@ -105,11 +105,17 @@ static void on_notebook_page_removed(GtkNotebook* nb, GtkWidget* page, guint num
 
 static void on_folder_view_clicked(FmFolderView* fv, FmFolderViewClickType type, FmFileInfo* fi, FmMainWin* win);
 
+static void update_overall_nav_history(FmMainWin * win, FmPath * path);
+static void update_overall_nav_history_menu(FmMainWin * win);
+static gboolean save_overall_nav_history(gpointer user_data);
+
 #include "main-win-ui.c" /* ui xml definitions and actions */
 
 static GSList* all_wins = NULL;
 static GtkDialog* about_dlg = NULL;
 static GtkWidget* key_nav_list_dlg = NULL;
+static FmNavHistory* overall_nav_history = NULL;
+static guint overall_nav_history_save_id = 0;
 
 static void fm_main_win_class_init(FmMainWinClass *klass)
 {
@@ -521,6 +527,32 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_box_pack_start( vbox, menubar, FALSE, TRUE, 0 );
     gtk_box_pack_start( vbox, GTK_WIDGET(win->toolbar), FALSE, TRUE, 0 );
 
+    /* overall history */
+    if (!overall_nav_history)
+    {
+        overall_nav_history = fm_nav_history_new();
+        fm_nav_history_set_max(overall_nav_history, 25);
+        fm_nav_history_set_allow_duplicates(overall_nav_history, FALSE);
+        char * cache_dir = pcmanfm_get_cache_dir(FALSE);
+        char * nav_history_file = g_build_filename(cache_dir, "navigation_history", NULL);
+        if (g_file_test(nav_history_file, G_FILE_TEST_IS_REGULAR))
+        {
+            GSList * list = g_slist_reverse(read_list_from_file(nav_history_file, FALSE));
+            GSList * l;
+            for (l = list; l; l = l->next)
+            {
+                FmPath* path = fm_path_new_for_str(l->data);
+                update_overall_nav_history(NULL, path);
+                fm_path_unref(path);
+            }
+        }
+        g_free(nav_history_file);
+        g_free(cache_dir);
+    }
+
+    GtkWidget* mi = gtk_ui_manager_get_widget(ui, "/menubar/GoMenu/RecentlyVisitedMenu");
+    win->overall_nav_history_menu = GTK_WIDGET(gtk_menu_item_get_submenu(GTK_MENU_ITEM(mi)));
+
     /* load bookmarks menu */
     load_bookmarks(win, ui);
 
@@ -578,6 +610,8 @@ static void fm_main_win_init(FmMainWin *win)
     win->ui = ui;
 
     gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(vbox));
+
+    update_overall_nav_history_menu(win);
 }
 
 
@@ -626,6 +660,10 @@ static void fm_main_win_destroy(GtkObject *object)
         }
 
         all_wins = g_slist_remove(all_wins, win);
+
+        /* Force saving of navigation history, if it was the last window. */
+        if (!all_wins)
+            save_overall_nav_history(NULL);
 
         while(gtk_notebook_get_n_pages(win->notebook) > 0)
             gtk_notebook_remove_page(win->notebook, 0);
@@ -1175,13 +1213,105 @@ static void on_tab_page_status_text(FmTabPage* page, guint type, const char* sta
     }
 }
 
+static void on_overall_nav_history_item(GtkMenuItem* mi, FmMainWin* win)
+{
+    FmPath* path = (FmPath*)g_object_get_data(G_OBJECT(mi), "path");
+    fm_main_win_chdir(win, path);
+}
+
+static gboolean save_overall_nav_history(gpointer user_data)
+{
+    /* Do nothing, if saving of the history is not scheduled. */
+    if (!overall_nav_history_save_id)
+        return FALSE;
+
+    const GList * l;
+    GString * string = g_string_new("");
+
+    for (l = fm_nav_history_list(overall_nav_history); l; l = l->next)
+    {
+        const FmNavHistoryItem * item = (FmNavHistoryItem *)l->data;
+        FmPath * path = item->path;
+        char * str = fm_path_to_str(path);
+        g_string_append_printf(string, "%s\n", str);
+        g_free(str);
+    }
+
+    char * cache_dir = pcmanfm_get_cache_dir(TRUE);
+    char * nav_history_file = g_build_filename(cache_dir, "navigation_history", NULL);
+
+    g_file_set_contents(nav_history_file, string->str, -1, NULL);
+
+    g_free(nav_history_file);
+    g_free(cache_dir);
+
+    g_string_free(string, TRUE);
+
+    overall_nav_history_save_id = 0;
+
+    return FALSE;
+}
+
+static void update_overall_nav_history_menu(FmMainWin * win)
+{
+    const GList * l;
+
+    if (!win->overall_nav_history_menu)
+        return;
+
+    gtk_container_foreach(GTK_CONTAINER(win->overall_nav_history_menu), (GtkCallback)gtk_widget_destroy, NULL);
+
+    for (l = fm_nav_history_list(overall_nav_history); l; l = l->next)
+    {
+        const FmNavHistoryItem * item = (FmNavHistoryItem *)l->data;
+        FmPath * path = item->path;
+
+        char * name = fm_path_display_name(path, TRUE);
+        char * tooltip = fm_path_display_name(path, FALSE);
+
+        GtkWidget* mi = gtk_menu_item_new_with_label(name);
+        if (strcmp(name, tooltip) != 0)
+            gtk_widget_set_tooltip_text(GTK_WIDGET(mi), tooltip);
+
+        g_free(tooltip);
+        g_free(name);
+
+        g_object_set_data_full(G_OBJECT(mi), "path", fm_path_ref(item->path), (GDestroyNotify)fm_path_unref);
+        g_signal_connect(mi, "activate", G_CALLBACK(on_overall_nav_history_item), win);
+        gtk_menu_shell_append(GTK_MENU_SHELL(win->overall_nav_history_menu), mi);
+    }
+
+    gtk_widget_show_all(GTK_WIDGET(win->overall_nav_history_menu));
+}
+
+static void update_overall_nav_history(FmMainWin * win, FmPath * path)
+{
+    if (!path && win)
+        path = fm_tab_page_get_cwd(win->current_page);
+
+    if (fm_nav_history_chdir(overall_nav_history, path, 0))
+    {
+        g_slist_foreach(all_wins, (GFunc)update_overall_nav_history_menu, NULL);
+        if (!overall_nav_history_save_id)
+            overall_nav_history_save_id = g_timeout_add(10 * 1000, save_overall_nav_history, NULL);
+    }
+}
+
+static void active_directory_changed(FmMainWin* win)
+{
+    FmTabPage* page = win->current_page;
+
+    fm_path_entry_set_path(win->location, fm_tab_page_get_cwd(page));
+    gtk_window_set_title(GTK_WINDOW(win), fm_tab_page_get_title(page));
+    update_overall_nav_history(win, NULL);
+}
+
 static void on_tab_page_chdir(FmTabPage* page, FmPath* path, FmMainWin* win)
 {
     if(page != win->current_page)
         return;
 
-    fm_path_entry_set_path(win->location, path);
-    gtk_window_set_title(GTK_WINDOW(win), fm_tab_page_get_title(page));
+    active_directory_changed(win);
 }
 
 static void on_folder_view_filter_changed(FmFolderView* fv, FmMainWin* win)
@@ -1239,8 +1369,7 @@ static void on_notebook_switch_page(GtkNotebook* nb, gpointer* new_page, guint n
         gtk_widget_show_all(GTK_WIDGET(win->side_pane));
     }
 
-    fm_path_entry_set_path(win->location, fm_tab_page_get_cwd(page));
-    gtk_window_set_title((GtkWindow*)win, fm_tab_page_get_title(page));
+    active_directory_changed(win);
 
     update_sort_menu(win);
     update_view_menu(win);
