@@ -27,11 +27,6 @@
 
 G_BEGIN_DECLS
 
-/* The FM_CHECK_VERSION macro is defined in libfm >= 1.0.2 */
-#ifndef FM_CHECK_VERSION
-#  define FM_CHECK_VERSION(...) 0
-#endif
-
 /* After opening any window/dialog/tool, this should be called. */
 void pcmanfm_ref();
 

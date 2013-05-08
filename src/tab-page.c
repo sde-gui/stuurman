@@ -275,7 +275,6 @@ static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
     /* FIXME: this should be set on toplevel parent */
     fm_set_busy_cursor(GTK_WIDGET(page));
 
-#if FM_CHECK_VERSION(1, 0, 2)
     if(fm_folder_is_incremental(folder))
     {
         /* create a model for the folder and set it to the view
@@ -289,7 +288,6 @@ static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
         g_object_unref(model);
     }
     else
-#endif
         fm_folder_view_set_model(fv, NULL);
 }
 
@@ -311,12 +309,9 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
         /* create a model for the folder and set it to the view */
         FmFolderModel* model = fm_folder_model_new(folder, app_config->show_hidden);
         fm_folder_view_set_model(fv, model);
-#if FM_CHECK_VERSION(1, 0, 2)
-        /* since 1.0.2 sorting should be applied on model instead of view */
         fm_folder_model_set_sort(model, app_config->sort_by,
                                  (app_config->sort_type == GTK_SORT_ASCENDING) ?
                                         FM_SORT_ASCENDING : FM_SORT_DESCENDING);
-#endif
         g_object_unref(model);
     }
     fm_folder_query_filesystem_info(folder); /* FIXME: is this needed? */
@@ -478,10 +473,6 @@ static void fm_tab_page_init(FmTabPage *page)
                                                       update_files_popup,
                                                       open_folder_func);
     page->folder_view = folder_view;
-#if !FM_CHECK_VERSION(1, 0, 2)
-    /* since 1.0.2 sorting should be applied on model instead */
-    fm_folder_view_sort(folder_view, app_config->sort_type, app_config->sort_by);
-#endif
     fm_folder_view_set_selection_mode(folder_view, GTK_SELECTION_MULTIPLE);
     page->nav_history = fm_nav_history_new();
     gtk_paned_add2(paned, GTK_WIDGET(page->folder_view));

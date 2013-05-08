@@ -99,9 +99,7 @@ static const char main_menu_xml[] =
   "<menu action='ToolMenu'>"
     "<menuitem action='Term'/>"
     "<menuitem action='AsRoot'/>"
-#if FM_CHECK_VERSION(1, 0, 2)
     "<menuitem action='Search'/>"
-#endif
   "</menu>"
   "<menu action='HelpMenu'>"
     "<menuitem action='About'/>"
@@ -166,9 +164,7 @@ static GtkActionEntry main_win_actions[]=
     {"ToolMenu", NULL, N_("Tool_s"), NULL, NULL, NULL},
         {"Term", "utilities-terminal", N_("Open Current Folder in _Terminal"), "F4", NULL, G_CALLBACK(on_open_in_terminal)},
         {"AsRoot", GTK_STOCK_DIALOG_AUTHENTICATION, N_("Open Current Folder as _Root"), NULL, NULL, G_CALLBACK(on_open_as_root)},
-#if FM_CHECK_VERSION(1, 0, 2)
         {"Search", GTK_STOCK_FIND, N_("Fin_d Files"), "<Ctrl><Shift>F", NULL, G_CALLBACK(on_search)},
-#endif
     /* for accelerators */
     {"Location", NULL, NULL, "<Alt>d", NULL, G_CALLBACK(on_location)},
     {"Location2", NULL, NULL, "<Ctrl>L", NULL, G_CALLBACK(on_location)},

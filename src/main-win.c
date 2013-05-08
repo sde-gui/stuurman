@@ -94,9 +94,7 @@ static void on_about(GtkAction* act, FmMainWin* win);
 static void on_key_nav_list(GtkAction* act, FmMainWin* win);
 static void on_open_in_terminal(GtkAction* act, FmMainWin* win);
 static void on_open_as_root(GtkAction* act, FmMainWin* win);
-#if FM_CHECK_VERSION(1, 0, 2)
 static void on_search(GtkAction* act, FmMainWin* win);
-#endif
 static void on_fullscreen(GtkToggleAction* act, FmMainWin* win);
 
 static void on_location(GtkAction* act, FmMainWin* win);
@@ -176,19 +174,13 @@ static void update_sort_menu(FmMainWin* win)
     GtkAction* act;
     FmFolderView* fv = win->folder_view;
     FmFolderModelViewCol by = fm_folder_view_get_sort_by(fv);
-#if FM_CHECK_VERSION(1, 0, 2)
     if(fv == NULL || fm_folder_view_get_model(fv) == NULL)
-        /* since 1.0.2 libfm have sorting only in FmFolderModel therefore
-           if there is no model then we cannot get last sorting from it */
         return;
-#endif
     act = gtk_ui_manager_get_action(win->ui, "/menubar/ViewMenu/Sort/Asc");
     gtk_radio_action_set_current_value(GTK_RADIO_ACTION(act), fm_folder_view_get_sort_type(fv));
     act = gtk_ui_manager_get_action(win->ui, "/menubar/ViewMenu/Sort/ByName");
-#if FM_CHECK_VERSION(1, 0, 2)
     if(by == FM_FOLDER_MODEL_COL_DEFAULT)
         by = FM_FOLDER_MODEL_COL_NAME;
-#endif
     gtk_radio_action_set_current_value(GTK_RADIO_ACTION(act), by);
 }
 
@@ -505,11 +497,6 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_ui_manager_insert_action_group(ui, act_grp, 0);
     gtk_ui_manager_add_ui_from_string(ui, main_menu_xml, -1, NULL);
     act = gtk_ui_manager_get_action(ui, "/menubar/ViewMenu/ShowHidden");
-#if !FM_CHECK_VERSION(1, 0, 2)
-    /* we cannot keep it in sync without callback from folder view which
-       is available only in 1.0.2 so just hide it */
-    gtk_action_set_visible(act, FALSE);
-#endif
     act = gtk_ui_manager_get_action(ui, "/menubar/ViewMenu/SidePane/ShowSidePane");
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(act),
                                  (app_config->side_pane_mode & FM_SP_HIDE) == 0);
@@ -787,7 +774,6 @@ static void on_open_as_root(GtkAction* act, FmMainWin* win)
     }
 }
 
-#if FM_CHECK_VERSION(1, 0, 2)
 static void on_search(GtkAction* act, FmMainWin* win)
 {
     FmTabPage* page = win->current_page;
@@ -796,7 +782,6 @@ static void on_search(GtkAction* act, FmMainWin* win)
     fm_launch_search_simple(GTK_WINDOW(win), NULL, l, pcmanfm_open_folder, NULL);
     g_list_free(l);
 }
-#endif
 
 static void on_show_hidden(GtkToggleAction* act, FmMainWin* win)
 {
@@ -1199,7 +1184,6 @@ static void on_tab_page_chdir(FmTabPage* page, FmPath* path, FmMainWin* win)
     gtk_window_set_title(GTK_WINDOW(win), fm_tab_page_get_title(page));
 }
 
-#if FM_CHECK_VERSION(1, 0, 2)
 static void on_folder_view_filter_changed(FmFolderView* fv, FmMainWin* win)
 {
     GtkAction* act;
@@ -1215,7 +1199,6 @@ static void on_folder_view_filter_changed(FmFolderView* fv, FmMainWin* win)
         pcmanfm_save_config(FALSE);
     }
 }
-#endif
 
 static void on_notebook_switch_page(GtkNotebook* nb, gpointer* new_page, guint num, FmMainWin* win)
 {
@@ -1242,9 +1225,7 @@ static void on_notebook_switch_page(GtkNotebook* nb, gpointer* new_page, guint n
                                fm_folder_view_get_n_selected_files(win->folder_view),
                                win);
     _update_hist_buttons(win);
-#if FM_CHECK_VERSION(1, 0, 2)
     on_folder_view_filter_changed(win->folder_view, win);
-#endif
 
     /* update side pane state */
     if(app_config->side_pane_mode & FM_SP_HIDE) /* hidden */
@@ -1285,11 +1266,9 @@ static void on_notebook_page_added(GtkNotebook* nb, GtkWidget* page, guint num, 
                      G_CALLBACK(on_folder_view_sort_changed), win);
     g_signal_connect(tab_page->folder_view, "sel-changed",
                      G_CALLBACK(on_folder_view_sel_changed), win);
-#if FM_CHECK_VERSION(1, 0, 2)
     /* connect to "filter-changed" to get ShowHidden state */
     g_signal_connect(tab_page->folder_view, "filter-changed",
                      G_CALLBACK(on_folder_view_filter_changed), win);
-#endif
     g_signal_connect(tab_page->folder_view, "clicked",
                      G_CALLBACK(on_folder_view_clicked), win);
     g_signal_connect(tab_page->side_pane, "mode-changed",
@@ -1330,10 +1309,8 @@ static void on_notebook_page_removed(GtkNotebook* nb, GtkWidget* page, guint num
                                              on_folder_view_sort_changed, win);
         g_signal_handlers_disconnect_by_func(tab_page->folder_view,
                                              on_folder_view_sel_changed, win);
-#if FM_CHECK_VERSION(1, 0, 2)
         g_signal_handlers_disconnect_by_func(tab_page->folder_view,
                                              on_folder_view_filter_changed, win);
-#endif
         g_signal_handlers_disconnect_by_func(tab_page->folder_view,
                                              on_folder_view_clicked, win);
     }
