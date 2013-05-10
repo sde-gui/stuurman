@@ -4,7 +4,7 @@
 AC_PREREQ([2.63])
 AC_INIT([stuurman], [1.1.0], [http://])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
-
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
