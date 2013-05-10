@@ -44,7 +44,3 @@ stuurman_LDADD = \
 	$(FM_LIBS) \
 	$(NULL)
 
-noinst_PROGRAMS=xml-purge
-xml_purge_SOURCES=xml-purge.c
-xml_purge_CFLAGS=$(GIO_CFLAGS)
-xml_purge_LDADD=$(GIO_LIBS)
