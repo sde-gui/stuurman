@@ -40,6 +40,8 @@ void overall_nav_history_initialize()
     overall_nav_history = fm_nav_history_new();
     fm_nav_history_set_max(overall_nav_history, 25);
     fm_nav_history_set_allow_duplicates(overall_nav_history, FALSE);
+    fm_nav_history_set_remove_parent(overall_nav_history, TRUE);
+
     char * cache_dir = pcmanfm_get_cache_dir(FALSE);
     char * nav_history_file = g_build_filename(cache_dir, "navigation_history", NULL);
     if (g_file_test(nav_history_file, G_FILE_TEST_IS_REGULAR))
