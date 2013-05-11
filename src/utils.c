@@ -21,3 +21,32 @@
 
 #include "utils.h"
 
+#include <string.h>
+#include <glib.h>
+
+gchar * ellipsize_string(char * s, int max_size)
+{
+    int l = strlen(s);
+
+    if (l < max_size)
+        return g_strdup(s);
+
+    l = g_utf8_strlen(s, -1);
+
+    if (l < max_size)
+        return g_strdup(s);
+
+    int left_chunk_size = (max_size - 3) / 2;
+    int right_chunk_size = (max_size - 3) - left_chunk_size;
+
+    gchar * left_chunk = g_utf8_substring(s, 0, left_chunk_size - 1);
+    gchar * right_chunk = g_utf8_substring(s, l - right_chunk_size, l - 1);
+
+    gchar * result = g_strconcat(left_chunk, "...", right_chunk, NULL);
+
+    g_free(left_chunk);
+    g_free(right_chunk);
+
+    return result;
+}
+

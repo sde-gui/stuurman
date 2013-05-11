@@ -37,6 +37,7 @@
 #include "main-win.h"
 #include "pref.h"
 #include "tab-page.h"
+#include "utils.h"
 
 #include "gseal-gtk-compat.h"
 
@@ -1350,9 +1351,16 @@ static void update_overall_nav_history_menu(FmMainWin * win)
         char * name = fm_path_display_name(path, TRUE);
         char * tooltip = fm_path_display_name(path, FALSE);
 
-        GtkWidget* mi = gtk_menu_item_new_with_label(name);
-        if (strcmp(name, tooltip) != 0)
-            gtk_widget_set_tooltip_text(GTK_WIDGET(mi), tooltip);
+        /* If name and tooltip are too long, gtk crashes. */
+        char * _name = ellipsize_string(name, 150);
+        char * _tooltip = ellipsize_string(tooltip, 250);
+
+        GtkWidget* mi = gtk_menu_item_new_with_label(_name);
+        if (strcmp(_name, _tooltip) != 0)
+            gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _tooltip);
+
+        g_free(_tooltip);
+        g_free(_name);
 
         g_free(tooltip);
         g_free(name);
@@ -1383,7 +1391,16 @@ static void active_directory_changed(FmMainWin* win)
     FmTabPage* page = win->current_page;
 
     fm_path_entry_set_path(win->location, fm_tab_page_get_cwd(page));
-    gtk_window_set_title(GTK_WINDOW(win), fm_tab_page_get_title(page));
+    if (0)
+    {
+        char * name = fm_path_display_name(fm_tab_page_get_cwd(page), TRUE);
+        gtk_window_set_title(GTK_WINDOW(win), name);
+        g_free(name);
+    }
+    else
+    {
+        gtk_window_set_title(GTK_WINDOW(win), fm_tab_page_get_title(page));
+    }
     update_overall_nav_history(win, NULL);
 }
 

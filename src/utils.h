@@ -27,6 +27,7 @@
 
 G_BEGIN_DECLS
 
+char * ellipsize_string(char * s, int max_size);
 
 G_END_DECLS
 
