@@ -88,6 +88,7 @@ static void on_show_hidden(GtkToggleAction* act, FmMainWin* win);
 static void on_show_side_pane(GtkToggleAction* act, FmMainWin* win);
 static void on_change_mode(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win);
 static void on_sort_by(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win);
+static void on_sort_by_active(GtkRadioAction * action, GParamSpec* ps, FmMainWin* win);
 static void on_sort_type(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win);
 static void on_side_pane_mode(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win);
 static void on_about(GtkAction* act, FmMainWin* win);
@@ -516,6 +517,15 @@ static void fm_main_win_init(FmMainWin *win)
     accel_grp = gtk_ui_manager_get_accel_group(ui);
     gtk_window_add_accel_group(GTK_WINDOW(win), accel_grp);
 
+    GtkAction * action = gtk_action_group_get_action(act_grp, "ByName");
+    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    action = gtk_action_group_get_action(act_grp, "ByMTime");
+    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    action = gtk_action_group_get_action(act_grp, "BySize");
+    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    action = gtk_action_group_get_action(act_grp, "ByType");
+    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+
     gtk_ui_manager_insert_action_group(ui, act_grp, 0);
     gtk_ui_manager_add_ui_from_string(ui, main_menu_xml, -1, NULL);
     act = gtk_ui_manager_get_action(ui, "/menubar/ViewMenu/ShowHidden");
@@ -891,26 +901,69 @@ static void on_change_mode(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* 
     fm_standard_view_set_mode(FM_STANDARD_VIEW(win->folder_view), mode);
 }
 
-static void on_sort_by(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win)
+static void change_sort(FmMainWin* win, int type, int by)
 {
-    int val = gtk_radio_action_get_current_value(cur);
-    fm_folder_view_sort(win->folder_view, -1, val);
-    if(val != app_config->sort_by)
+    fm_folder_view_sort(win->folder_view, type, by);
+
+    gboolean save_config = FALSE;
+
+    if (type >= 0 && type != app_config->sort_type)
     {
-        app_config->sort_by = val;
-        pcmanfm_save_config(FALSE);
+        app_config->sort_type = type;
+        save_config = TRUE;
     }
+
+    if (by >= 0 && by != app_config->sort_by)
+    {
+        app_config->sort_by = by;
+        save_config = TRUE;
+    }
+
+    if (save_config)
+        pcmanfm_save_config(FALSE);
+}
+
+static void change_sort_type(FmMainWin* win, int val)
+{
+    change_sort(win, val, -1);
+}
+
+static void change_sort_by(FmMainWin* win, int val)
+{
+    gint64 t = g_get_monotonic_time();
+
+    change_sort(win, GTK_SORT_ASCENDING, val);
+
+    if (val == app_config->sort_by && t - win->sort_by_time < 700000)
+    {
+        change_sort_type(win, app_config->sort_type == GTK_SORT_ASCENDING ? GTK_SORT_DESCENDING : GTK_SORT_ASCENDING);
+        t = 0;
+    }
+
+    win->sort_by_time = t;
 }
 
 static void on_sort_type(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win)
 {
-    guint val = gtk_radio_action_get_current_value(cur);
-    fm_folder_view_sort(win->folder_view, val, -1);
-    if(val != app_config->sort_type)
-    {
-        app_config->sort_type = val;
-        pcmanfm_save_config(FALSE);
-    }
+    change_sort_type(win, gtk_radio_action_get_current_value(cur));
+}
+
+static void on_sort_by(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win)
+{
+    /* Do nothing. */
+}
+
+static void on_sort_by_active(GtkRadioAction * action, GParamSpec* ps, FmMainWin* win)
+{
+    gboolean active;
+    gint value;
+    g_object_get(action,
+        "value", &value,
+        "active", &active,
+        NULL);
+
+    if (active)
+        change_sort_by(win, value);
 }
 
 static void on_side_pane_mode(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* win)
