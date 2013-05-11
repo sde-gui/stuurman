@@ -38,6 +38,7 @@
 #include "pref.h"
 #include "tab-page.h"
 #include "utils.h"
+#include "overall-nav-history.h"
 
 #include "gseal-gtk-compat.h"
 
@@ -109,15 +110,12 @@ static void on_folder_view_clicked(FmFolderView* fv, FmFolderViewClickType type,
 
 static void update_overall_nav_history(FmMainWin * win, FmPath * path);
 static void update_overall_nav_history_menu(FmMainWin * win);
-static gboolean save_overall_nav_history(gpointer user_data);
 
 #include "main-win-ui.c" /* ui xml definitions and actions */
 
 static GSList* all_wins = NULL;
 static GtkDialog* about_dlg = NULL;
 static GtkWidget* key_nav_list_dlg = NULL;
-static FmNavHistory* overall_nav_history = NULL;
-static guint overall_nav_history_save_id = 0;
 
 static void fm_main_win_class_init(FmMainWinClass *klass)
 {
@@ -567,28 +565,7 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_box_pack_start( vbox, GTK_WIDGET(win->toolbar), FALSE, TRUE, 0 );
 
     /* overall history */
-    if (!overall_nav_history)
-    {
-        overall_nav_history = fm_nav_history_new();
-        fm_nav_history_set_max(overall_nav_history, 25);
-        fm_nav_history_set_allow_duplicates(overall_nav_history, FALSE);
-        char * cache_dir = pcmanfm_get_cache_dir(FALSE);
-        char * nav_history_file = g_build_filename(cache_dir, "navigation_history", NULL);
-        if (g_file_test(nav_history_file, G_FILE_TEST_IS_REGULAR))
-        {
-            GSList * list = g_slist_reverse(read_list_from_file(nav_history_file, FALSE));
-            GSList * l;
-            for (l = list; l; l = l->next)
-            {
-                FmPath* path = fm_path_new_for_str(l->data);
-                update_overall_nav_history(NULL, path);
-                fm_path_unref(path);
-            }
-        }
-        g_free(nav_history_file);
-        g_free(cache_dir);
-    }
-
+    overall_nav_history_initialize();
     GtkWidget* mi = gtk_ui_manager_get_widget(ui, "/menubar/GoMenu/RecentlyVisitedMenu");
     win->overall_nav_history_menu = GTK_WIDGET(gtk_menu_item_get_submenu(GTK_MENU_ITEM(mi)));
 
@@ -702,7 +679,7 @@ static void fm_main_win_destroy(GtkObject *object)
 
         /* Force saving of navigation history, if it was the last window. */
         if (!all_wins)
-            save_overall_nav_history(NULL);
+            save_overall_nav_history();
 
         while(gtk_notebook_get_n_pages(win->notebook) > 0)
             gtk_notebook_remove_page(win->notebook, 0);
@@ -1301,39 +1278,6 @@ static void on_overall_nav_history_item(GtkMenuItem* mi, FmMainWin* win)
     fm_main_win_chdir(win, path);
 }
 
-static gboolean save_overall_nav_history(gpointer user_data)
-{
-    /* Do nothing, if saving of the history is not scheduled. */
-    if (!overall_nav_history_save_id)
-        return FALSE;
-
-    const GList * l;
-    GString * string = g_string_new("");
-
-    for (l = fm_nav_history_list(overall_nav_history); l; l = l->next)
-    {
-        const FmNavHistoryItem * item = (FmNavHistoryItem *)l->data;
-        FmPath * path = item->path;
-        char * str = fm_path_to_str(path);
-        g_string_append_printf(string, "%s\n", str);
-        g_free(str);
-    }
-
-    char * cache_dir = pcmanfm_get_cache_dir(TRUE);
-    char * nav_history_file = g_build_filename(cache_dir, "navigation_history", NULL);
-
-    g_file_set_contents(nav_history_file, string->str, -1, NULL);
-
-    g_free(nav_history_file);
-    g_free(cache_dir);
-
-    g_string_free(string, TRUE);
-
-    overall_nav_history_save_id = 0;
-
-    return FALSE;
-}
-
 static void update_overall_nav_history_menu(FmMainWin * win)
 {
     const GList * l;
@@ -1378,12 +1322,8 @@ static void update_overall_nav_history(FmMainWin * win, FmPath * path)
     if (!path && win)
         path = fm_tab_page_get_cwd(win->current_page);
 
-    if (fm_nav_history_chdir(overall_nav_history, path, 0))
-    {
+    if (overall_nav_history_add_path(path))
         g_slist_foreach(all_wins, (GFunc)update_overall_nav_history_menu, NULL);
-        if (!overall_nav_history_save_id)
-            overall_nav_history_save_id = g_timeout_add(10 * 1000, save_overall_nav_history, NULL);
-    }
 }
 
 static void active_directory_changed(FmMainWin* win)

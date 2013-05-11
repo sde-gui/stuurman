@@ -12,6 +12,8 @@ stuurman_SOURCES = \
 	pcmanfm.h \
 	app-config.c \
 	app-config.h \
+	overall-nav-history.c \
+	overall-nav-history.h \
 	main-win.c \
 	main-win.h \
 	tab-page.c \
