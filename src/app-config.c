@@ -106,6 +106,7 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
     fm_key_file_get_bool(kf, "volume", "autorun", &cfg->autorun);
 
     /* ui */
+    fm_key_file_get_bool(kf, "ui", "full_path_in_title", &cfg->full_path_in_title);
     fm_key_file_get_int(kf, "ui", "always_show_tabs", &cfg->always_show_tabs);
     fm_key_file_get_int(kf, "ui", "hide_close_btn", &cfg->hide_close_btn);
     fm_key_file_get_int(kf, "ui", "max_tab_chars", &cfg->max_tab_chars);
@@ -189,6 +190,7 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append_printf(buf, "autorun=%d\n", cfg->autorun);
 
         g_string_append(buf, "\n[ui]\n");
+        g_string_append_printf(buf, "full_path_in_title=%d\n", cfg->full_path_in_title);
         g_string_append_printf(buf, "always_show_tabs=%d\n", cfg->always_show_tabs);
         g_string_append_printf(buf, "max_tab_chars=%d\n", cfg->max_tab_chars);
         /* g_string_append_printf(buf, "hide_close_btn=%d\n", cfg->hide_close_btn); */

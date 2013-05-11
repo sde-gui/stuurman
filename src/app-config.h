@@ -73,6 +73,7 @@ struct _FmAppConfig
     gboolean autorun;
 
     /* ui */
+    gboolean full_path_in_title;
     gboolean always_show_tabs;
     gboolean hide_close_btn;
     int max_tab_chars;

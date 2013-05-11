@@ -1391,7 +1391,7 @@ static void active_directory_changed(FmMainWin* win)
     FmTabPage* page = win->current_page;
 
     fm_path_entry_set_path(win->location, fm_tab_page_get_cwd(page));
-    if (0)
+    if (app_config->full_path_in_title)
     {
         char * name = fm_path_display_name(fm_tab_page_get_cwd(page), TRUE);
         gtk_window_set_title(GTK_WINDOW(win), name);
