@@ -306,6 +306,13 @@ void fm_edit_preference( GtkWindow* parent, int page )
         INIT_ENTRY(builder, FmAppConfig, su_cmd, NULL);
         INIT_BOOL(builder, FmConfig, force_startup_notify, NULL);
 
+        INIT_BOOL(builder, FmConfig, places_home, NULL);
+        INIT_BOOL(builder, FmConfig, places_desktop, NULL);
+        INIT_BOOL(builder, FmConfig, places_applications, NULL);
+        INIT_BOOL(builder, FmConfig, places_trash, NULL);
+        INIT_BOOL(builder, FmConfig, places_computer, NULL);
+        INIT_BOOL(builder, FmConfig, places_root, NULL);
+
         /* archiver integration */
         init_archiver_combo(builder);
 
