@@ -731,7 +731,7 @@ static void on_about(GtkAction* act, FmMainWin* win)
     if(!about_dlg)
     {
         GtkBuilder* builder = gtk_builder_new();
-        gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/about.ui", NULL);
+        gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/about.glade", NULL);
         about_dlg = GTK_DIALOG(gtk_builder_get_object(builder, "dlg"));
         g_object_unref(builder);
         g_signal_connect(about_dlg, "response", G_CALLBACK(on_about_response), (gpointer)&about_dlg);

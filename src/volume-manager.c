@@ -181,7 +181,7 @@ inline static void show_autorun_dlg(GVolume* vol, GMount* mount)
     data->cancel = g_cancellable_new();
 
     builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/autorun.ui", NULL);
+    gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/autorun.glade", NULL);
     data->dlg = GTK_DIALOG(gtk_builder_get_object(builder, "dlg"));
     data->view = GTK_TREE_VIEW(gtk_builder_get_object(builder, "listview"));
     data->type = GTK_LABEL(gtk_builder_get_object(builder, "type"));

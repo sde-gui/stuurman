@@ -272,7 +272,7 @@ void fm_edit_preference( GtkWindow* parent, int page )
         GtkTreeIter it;
         int i, n;
 
-        gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/pref.ui", NULL);
+        gtk_builder_add_from_file(builder, PACKAGE_UI_DIR "/pref.glade", NULL);
         pref_dlg = GTK_WINDOW(gtk_builder_get_object(builder, "dlg"));
         notebook = GTK_NOTEBOOK(gtk_builder_get_object(builder, "notebook"));
 
