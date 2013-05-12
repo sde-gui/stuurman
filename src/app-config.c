@@ -132,8 +132,10 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
     else
         cfg->sort_type = GTK_SORT_ASCENDING;
     fm_key_file_get_int(kf, "ui", "sort_by", &cfg->sort_by);
-    if(!FM_FOLDER_MODEL_COL_IS_VALID(cfg->sort_by))
-        cfg->sort_by = COL_FILE_NAME;
+
+/* FIXME: libsmfm is not yet initialized here, so FM_FOLDER_MODEL_COL_IS_VALID() always fails. */
+/*    if(!FM_FOLDER_MODEL_COL_IS_VALID(cfg->sort_by))
+        cfg->sort_by = COL_FILE_NAME;*/
 }
 
 void fm_app_config_load_from_profile(FmAppConfig* cfg, const char* name)
