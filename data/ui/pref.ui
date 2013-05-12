@@ -90,7 +90,6 @@
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Preferences</property>
-    <property name="resizable">False</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
@@ -1452,12 +1451,14 @@
                               <object class="GtkVBox" id="vbox13">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="spacing">6</property>
                                 <child>
-                                  <object class="GtkHBox" id="hbox5">
+                                  <object class="GtkTable" id="table3">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="spacing">12</property>
+                                    <property name="n_rows">5</property>
+                                    <property name="n_columns">2</property>
+                                    <property name="column_spacing">6</property>
+                                    <property name="row_spacing">6</property>
                                     <child>
                                       <object class="GtkLabel" id="label5">
                                         <property name="visible">True</property>
@@ -1468,9 +1469,7 @@
                                         <property name="mnemonic_widget">terminal</property>
                                       </object>
                                       <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
+                                        <property name="x_options">GTK_SHRINK | GTK_FILL</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1486,23 +1485,10 @@
                                         <property name="secondary_icon_sensitive">True</property>
                                       </object>
                                       <packing>
-                                        <property name="expand">True</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
+                                        <property name="left_attach">1</property>
+                                        <property name="right_attach">2</property>
                                       </packing>
                                     </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkHBox" id="hbox6">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="spacing">12</property>
                                     <child>
                                       <object class="GtkLabel" id="label14">
                                         <property name="visible">True</property>
@@ -1510,12 +1496,11 @@
                                         <property name="xalign">0</property>
                                         <property name="label" translatable="yes">_Switch user command:</property>
                                         <property name="use_underline">True</property>
-                                        <property name="mnemonic_widget">su_cmd</property>
                                       </object>
                                       <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
+                                        <property name="top_attach">1</property>
+                                        <property name="bottom_attach">2</property>
+                                        <property name="x_options">GTK_SHRINK | GTK_FILL</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1531,37 +1516,27 @@
                                         <property name="secondary_icon_sensitive">True</property>
                                       </object>
                                       <packing>
-                                        <property name="expand">True</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
+                                        <property name="left_attach">1</property>
+                                        <property name="right_attach">2</property>
+                                        <property name="top_attach">1</property>
+                                        <property name="bottom_attach">2</property>
                                       </packing>
                                     </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="label17">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="xalign">0</property>
-                                    <property name="label" translatable="yes">Examples: "xterm -e %s" for terminal or "gksu %s" for switching user.
-%s = the command line you want to execute with terminal or su.</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkHBox" id="hbox7">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="spacing">12</property>
+                                    <child>
+                                      <object class="GtkLabel" id="label17">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="xalign">0</property>
+                                        <property name="label" translatable="yes">Examples:
+"xterm -e %s" for terminal,
+"gksu %s" for switching user.</property>
+                                      </object>
+                                      <packing>
+                                        <property name="right_attach">2</property>
+                                        <property name="top_attach">2</property>
+                                        <property name="bottom_attach">3</property>
+                                      </packing>
+                                    </child>
                                     <child>
                                       <object class="GtkLabel" id="label21">
                                         <property name="visible">True</property>
@@ -1569,12 +1544,11 @@
                                         <property name="xalign">0</property>
                                         <property name="label" translatable="yes">A_rchiver integration:</property>
                                         <property name="use_underline">True</property>
-                                        <property name="mnemonic_widget">archiver</property>
                                       </object>
                                       <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
+                                        <property name="top_attach">3</property>
+                                        <property name="bottom_attach">4</property>
+                                        <property name="x_options">GTK_SHRINK | GTK_FILL</property>
                                       </packing>
                                     </child>
                                     <child>
@@ -1589,35 +1563,34 @@
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="expand">True</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
+                                        <property name="left_attach">1</property>
+                                        <property name="right_attach">2</property>
+                                        <property name="top_attach">3</property>
+                                        <property name="bottom_attach">4</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkCheckButton" id="force_startup_notify">
+                                        <property name="label" translatable="yes">_Use Application Startup Notify by default</property>
+                                        <property name="use_action_appearance">False</property>
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">False</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="xalign">0</property>
+                                        <property name="draw_indicator">True</property>
+                                      </object>
+                                      <packing>
+                                        <property name="right_attach">2</property>
+                                        <property name="top_attach">4</property>
+                                        <property name="bottom_attach">5</property>
                                       </packing>
                                     </child>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
                                     <property name="fill">True</property>
-                                    <property name="position">3</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="force_startup_notify">
-                                    <property name="label" translatable="yes">_Use Application Startup Notify by default</property>
-                                    <property name="use_action_appearance">False</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">If checked then use Startup Notify for application if another not stated explicitly.
-If unchecked then use Startup Notify only if that is defined for application.</property>
-                                    <property name="use_underline">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">4</property>
+                                    <property name="position">0</property>
                                   </packing>
                                 </child>
                               </object>
