@@ -72,6 +72,11 @@ struct _FmAppConfig
     gboolean mount_removable;
     gboolean autorun;
 
+    /* layout */
+    gboolean menubar_visible;
+    gboolean toolbar_visible;
+    gboolean statusbar_visible;
+
     /* ui */
     gboolean full_path_in_title;
     gboolean always_show_tabs;

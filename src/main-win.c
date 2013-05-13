@@ -111,11 +111,62 @@ static void on_folder_view_clicked(FmFolderView* fv, FmFolderViewClickType type,
 static void update_overall_nav_history(FmMainWin * win, FmPath * path);
 static void update_overall_nav_history_menu(FmMainWin * win);
 
-#include "main-win-ui.c" /* ui xml definitions and actions */
-
 static GSList* all_wins = NULL;
 static GtkDialog* about_dlg = NULL;
 static GtkWidget* key_nav_list_dlg = NULL;
+
+
+
+
+/****************************************************************************/
+
+/* Managing visibility of toolbar/statusbar/menubar. */
+
+#define layout_XXX_set_visibility(name) \
+static void layout_##name##_set_visibility(FmMainWin * win, gboolean value)\
+{\
+    g_return_if_fail(win && win->name);\
+    gtk_widget_set_visible(GTK_WIDGET(win->name), value);\
+    if (app_config->name##_visible != value)\
+    {\
+        app_config->name##_visible = value;\
+        pcmanfm_save_config(FALSE);\
+    }\
+}\
+\
+static void on_show_##name(GtkToggleAction * action, FmMainWin * win)\
+{\
+    layout_##name##_set_visibility(win, gtk_toggle_action_get_active(action));\
+}\
+
+layout_XXX_set_visibility(menubar)
+layout_XXX_set_visibility(toolbar)
+layout_XXX_set_visibility(statusbar)
+
+void layout_visibility_initialize(FmMainWin* win)
+{
+    GtkAction * action;
+
+    action = gtk_action_group_get_action(win->action_group, "ShowMenubar");
+    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), app_config->menubar_visible);
+
+    action = gtk_action_group_get_action(win->action_group, "ShowToolbar");
+    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), app_config->toolbar_visible);
+
+    action = gtk_action_group_get_action(win->action_group, "ShowStatusbar");
+    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action), app_config->statusbar_visible);
+}
+
+void layout_visibility_finalize(FmMainWin* win)
+{
+}
+
+/****************************************************************************/
+
+
+
+
+
 
 static void fm_main_win_class_init(FmMainWinClass *klass)
 {
@@ -465,6 +516,8 @@ static void on_side_pane_mode_changed(FmSidePane* sp, FmMainWin* win)
     }
 }
 
+#include "main-win-ui.c" /* ui xml definitions and actions */
+
 static void fm_main_win_init(FmMainWin *win)
 {
     GtkBox *vbox;
@@ -491,7 +544,7 @@ static void fm_main_win_init(FmMainWin *win)
 
     /* create menu bar and toolbar */
     ui = gtk_ui_manager_new();
-    act_grp = gtk_action_group_new("Main");
+    win->action_group = act_grp = gtk_action_group_new("Main");
     gtk_action_group_set_translation_domain(act_grp, NULL);
     gtk_action_group_add_actions(act_grp, main_win_actions, G_N_ELEMENTS(main_win_actions), win);
     gtk_action_group_add_toggle_actions(act_grp, main_win_toggle_actions,
@@ -622,12 +675,18 @@ static void fm_main_win_init(FmMainWin *win)
     win->statusbar_ctx = gtk_statusbar_get_context_id(win->statusbar, "status");
     win->statusbar_ctx2 = gtk_statusbar_get_context_id(win->statusbar, "status2");
 
-    g_object_unref(act_grp);
     win->ui = ui;
 
     gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(vbox));
 
     update_overall_nav_history_menu(win);
+
+    gtk_widget_show_all(GTK_WIDGET(vbox));
+    gtk_widget_show_all(GTK_WIDGET(win->menubar));
+    gtk_widget_show_all(GTK_WIDGET(win->toolbar));
+    gtk_widget_show_all(GTK_WIDGET(win->statusbar));
+
+    layout_visibility_initialize(win);
 }
 
 
@@ -652,6 +711,8 @@ static void fm_main_win_destroy(GtkObject *object)
     /* Gtk+ runs destroy method twice */
     if(win->win_group)
     {
+        layout_visibility_finalize(win);
+
         g_signal_handlers_disconnect_by_func(win->location, on_location_activate, win);
         g_signal_handlers_disconnect_by_func(win->notebook, on_notebook_switch_page, win);
         g_signal_handlers_disconnect_by_func(win->notebook, on_notebook_page_added, win);
@@ -660,8 +721,13 @@ static void fm_main_win_destroy(GtkObject *object)
         gtk_window_group_remove_window(win->win_group, GTK_WINDOW(win));
         g_object_unref(win->win_group);
         win->win_group = NULL;
+
         g_object_unref(win->ui);
         win->ui = NULL;
+
+        g_object_unref(win->action_group);
+        win->action_group = NULL;
+
         if(win->bookmarks)
         {
             g_signal_handlers_disconnect_by_func(win->bookmarks, on_bookmarks_changed, win);
@@ -1149,7 +1215,7 @@ FmMainWin* fm_main_win_add_win(FmMainWin* win, FmPath* path)
     gtk_window_set_default_size(GTK_WINDOW(win),
                                 app_config->win_width,
                                 app_config->win_height);
-    gtk_widget_show_all(GTK_WIDGET(win));
+    gtk_widget_show(GTK_WIDGET(win));
     /* create new tab */
     fm_main_win_new_tab(win, path);
     gtk_window_present(GTK_WINDOW(win));

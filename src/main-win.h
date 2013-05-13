@@ -48,6 +48,7 @@ struct _FmMainWin
     GtkWindowGroup* win_group;
 
     GtkUIManager* ui;
+    GtkActionGroup* action_group;
     GtkWidget *menubar;
     GtkWidget *spinner;
     GtkToolbar* toolbar;

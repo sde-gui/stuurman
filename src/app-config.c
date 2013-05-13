@@ -70,6 +70,10 @@ static void fm_app_config_init(FmAppConfig *cfg)
     cfg->mount_removable = TRUE;
     cfg->autorun = TRUE;
 
+    cfg->menubar_visible = TRUE;
+    cfg->toolbar_visible = TRUE;
+    cfg->statusbar_visible = TRUE;
+
     cfg->win_width = 640;
     cfg->win_height = 480;
     cfg->splitter_pos = 150;
@@ -104,6 +108,11 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
     fm_key_file_get_bool(kf, "volume", "mount_on_startup", &cfg->mount_on_startup);
     fm_key_file_get_bool(kf, "volume", "mount_removable", &cfg->mount_removable);
     fm_key_file_get_bool(kf, "volume", "autorun", &cfg->autorun);
+
+    /* layout */
+    fm_key_file_get_bool(kf, "layout", "menubar_visible", &cfg->menubar_visible);
+    fm_key_file_get_bool(kf, "layout", "toolbar_visible", &cfg->toolbar_visible);
+    fm_key_file_get_bool(kf, "layout", "statusbar_visible", &cfg->statusbar_visible);
 
     /* ui */
     fm_key_file_get_bool(kf, "ui", "full_path_in_title", &cfg->full_path_in_title);
@@ -190,6 +199,11 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append_printf(buf, "mount_on_startup=%d\n", cfg->mount_on_startup);
         g_string_append_printf(buf, "mount_removable=%d\n", cfg->mount_removable);
         g_string_append_printf(buf, "autorun=%d\n", cfg->autorun);
+
+        g_string_append(buf, "\n[layout]\n");
+        g_string_append_printf(buf, "menubar_visible=%d\n", cfg->menubar_visible);
+        g_string_append_printf(buf, "toolbar_visible=%d\n", cfg->toolbar_visible);
+        g_string_append_printf(buf, "statusbar_visible=%d\n", cfg->statusbar_visible);
 
         g_string_append(buf, "\n[ui]\n");
         g_string_append_printf(buf, "full_path_in_title=%d\n", cfg->full_path_in_title);
