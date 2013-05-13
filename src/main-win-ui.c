@@ -74,7 +74,7 @@ static const char main_menu_xml[] =
   "</menu>"
   "<menu action='ViewMenu'>"
     "<menuitem action='Reload'/>"
-    "<menuitem action='ShowHidden'/>"
+    "<separator/>"
     "<menu action='SidePane'>"
       "<menuitem action='ShowSidePane' />"
       "<separator/>"
@@ -87,10 +87,7 @@ static const char main_menu_xml[] =
     /* "<menuitem action='TwinPane'/>" */
     "<menuitem action='Fullscreen' />"
     "<separator/>"
-    "<menuitem action='IconView'/>"
-    "<menuitem action='ThumbnailView'/>"
-    "<menuitem action='CompactView'/>"
-    "<menuitem action='ListView'/>"
+    "<menuitem action='ShowHidden'/>"
     "<separator/>"
     "<menu action='Sort'>"
       "<menuitem action='Asc'/>"
@@ -101,6 +98,11 @@ static const char main_menu_xml[] =
       "<menuitem action='BySize'/>"
       "<menuitem action='ByType'/>"
     "</menu>"
+    "<separator/>"
+    "<menuitem action='IconView'/>"
+    "<menuitem action='ThumbnailView'/>"
+    "<menuitem action='CompactView'/>"
+    "<menuitem action='ListView'/>"
   "</menu>"
   "<menu action='ToolMenu'>"
     "<menuitem action='Term'/>"
@@ -150,7 +152,7 @@ static GtkActionEntry main_win_actions[]=
         {"Reload", NULL, N_("_Reload Folder"), "F5", N_("Reload current folder"), G_CALLBACK(on_reload)},
         {"SidePane", NULL, N_("Side _Pane"), NULL, NULL, NULL},
         /* other see below: 'ShowHidden' 'ShowStatus' 'Fullscreen' 'IconView'... */
-        {"Sort", NULL, N_("S_ort Files"), NULL, NULL, NULL},
+        {"Sort", NULL, N_("Arran_ge Items"), NULL, NULL, NULL},
     {"HelpMenu", NULL, N_("_Help"), NULL, NULL, NULL},
         {"About", GTK_STOCK_ABOUT, NULL, NULL, NULL, G_CALLBACK(on_about)},
         {"KeyNavList", GTK_STOCK_INFO, N_("_Keyboard navigation"), NULL, NULL, G_CALLBACK(on_key_nav_list)},
