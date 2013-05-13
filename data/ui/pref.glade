@@ -1716,6 +1716,10 @@
         <col id="0">12x12</col>
         <col id="1">12</col>
       </row>
+      <row>
+        <col id="0" translatable="yes">No icons</col>
+        <col id="1">0</col>
+      </row>
     </data>
   </object>
   <object class="GtkListStore" id="thumb_sizes">
