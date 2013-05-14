@@ -687,6 +687,13 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_widget_show_all(GTK_WIDGET(win->statusbar));
 
     layout_visibility_initialize(win);
+
+    if (geteuid() == 0)
+    {
+        GtkAction * action = gtk_action_group_get_action(win->action_group, "AsRoot");
+        gtk_action_set_sensitive(action, FALSE);
+        gtk_action_set_visible(action, FALSE);
+    }
 }
 
 
