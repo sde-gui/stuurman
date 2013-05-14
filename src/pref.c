@@ -302,6 +302,8 @@ void fm_edit_preference( GtkWindow* parent, int page )
         INIT_ICON_SIZES(builder, thumbnail_size);
         INIT_ICON_SIZES(builder, pane_icon_size);
 
+        INIT_BOOL(builder, FmConfig, highlight_file_names, NULL);
+
         INIT_ENTRY(builder, FmConfig, terminal, NULL);
         INIT_ENTRY(builder, FmAppConfig, su_cmd, NULL);
         INIT_BOOL(builder, FmConfig, force_startup_notify, NULL);
