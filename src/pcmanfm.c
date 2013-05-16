@@ -36,7 +36,7 @@
 #include <signal.h>
 #include <unistd.h> /* for getcwd */
 
-#include <libsmfm/fm-gtk.h>
+#include <libsmfm-gtk/fm-gtk.h>
 #include "app-config.h"
 #include "main-win.h"
 #include "volume-manager.h"

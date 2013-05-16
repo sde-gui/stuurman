@@ -22,7 +22,7 @@
 #ifndef __OVERALL_NAV_HISTORY_H__
 #define __OVERALL_NAV_HISTORY_H__
 
-#include <libsmfm/fm.h>
+#include <libsmfm-core/fm.h>
 
 FmNavHistory* overall_nav_history;
 

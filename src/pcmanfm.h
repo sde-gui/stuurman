@@ -23,7 +23,7 @@
 #define __PCMANFM_H__
 
 #include <gtk/gtk.h>
-#include <libsmfm/fm.h>
+#include <libsmfm-core/fm.h>
 
 G_BEGIN_DECLS
 

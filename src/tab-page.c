@@ -21,7 +21,7 @@
 # include <config.h>
 #endif
 
-#include <libsmfm/fm-gtk.h>
+#include <libsmfm-gtk/fm-gtk.h>
 #include <glib/gi18n.h>
 
 #include "app-config.h"
@@ -579,15 +579,26 @@ FmTabPage *fm_tab_page_new(FmPath* path)
     return page;
 }
 
-static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path)
+static void fm_tab_page_update_label(FmTabPage* page, FmPath* path)
 {
-    char* disp_name = fm_path_display_basename(path);
+    char * disp_name = fm_path_display_basename(path);
+/*    if (page->pattern && *page->pattern)
+    {
+        char * s = g_strdup_printf(_("[%s] %s"), page->pattern, disp_name);
+        g_free(disp_name);
+        disp_name = s;
+    }*/
     fm_tab_label_set_text(page->tab_label, disp_name);
     g_free(disp_name);
 
     char * disp_path = fm_path_display_name(path, FALSE);
     fm_tab_label_set_tooltip_text(FM_TAB_LABEL(page->tab_label), disp_path);
     g_free(disp_path);
+}
+
+static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path)
+{
+    fm_tab_page_update_label(page, path);
 
     free_folder(page);
 

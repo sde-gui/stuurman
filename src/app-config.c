@@ -23,7 +23,7 @@
 #include <config.h>
 #endif
 
-#include <libsmfm/fm-gtk.h>
+#include <libsmfm-gtk/fm-gtk.h>
 #include <stdio.h>
 
 #include "app-config.h"
