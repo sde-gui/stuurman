@@ -1212,7 +1212,7 @@ gint fm_main_win_add_tab(FmMainWin* win, FmPath* path)
 {
     gint n = fm_main_win_new_tab(win, path);
 
-    gtk_widget_show_all(gtk_notebook_get_nth_page(win->notebook, n));
+    gtk_widget_show(gtk_notebook_get_nth_page(win->notebook, n));
     return n;
 }
 
