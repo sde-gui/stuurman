@@ -59,6 +59,8 @@ struct _FmTabPage
     char* status_text[FM_STATUS_TEXT_NUM];
     FmFolder* folder;
     gboolean loading;
+
+    FmPath * select_path_after_chdir;
 };
 
 struct _FmTabPageClass
@@ -77,7 +79,7 @@ GType fm_tab_page_get_type(void);
 
 FmTabPage* fm_tab_page_new(FmPath* path);
 
-void fm_tab_page_chdir(FmTabPage* page, FmPath* path);
+void fm_tab_page_chdir(FmTabPage* page, FmPath* path, FmPath* select_path);
 
 void fm_tab_page_set_show_hidden(FmTabPage* page, gboolean show_hidden);
 

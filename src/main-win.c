@@ -205,7 +205,7 @@ static gboolean idle_focus_view(gpointer user_data)
 static void on_location_activate(GtkEntry* entry, FmMainWin* win)
 {
     FmPath* path = fm_path_entry_get_path(FM_PATH_ENTRY(entry));
-    fm_main_win_chdir(win, path);
+    fm_main_win_chdir(win, path, NULL);
 
     /* FIXME: due to bug #650114 in GTK+, GtkEntry still call a
      * idle function for GtkEntryCompletion even if the completion
@@ -314,7 +314,7 @@ static void on_bookmark(GtkMenuItem* mi, FmMainWin* win)
     switch(app_config->bm_open_method)
     {
     case FM_OPEN_IN_CURRENT_TAB: /* current tab */
-        fm_main_win_chdir(win, path);
+        fm_main_win_chdir(win, path, NULL);
         break;
     case FM_OPEN_IN_NEW_TAB: /* new tab */
         fm_main_win_add_tab(win, path);
@@ -469,7 +469,7 @@ static void on_side_pane_chdir(FmSidePane* sp, guint button, FmPath* path, FmMai
     if(button == 2) /* middle click */
         fm_main_win_add_tab(win, path);
     else
-        fm_main_win_chdir(win, path);
+        fm_main_win_chdir(win, path, NULL);
 
     /* bug #3531696: search is done on side pane instead of folder view */
     if(win->folder_view)
@@ -1092,22 +1092,22 @@ static void on_go_up(GtkAction* act, FmMainWin* win)
 {
     FmPath* parent = fm_path_get_parent(fm_tab_page_get_cwd(win->current_page));
     if(parent)
-        fm_main_win_chdir( win, parent);
+        fm_main_win_chdir(win, parent, fm_tab_page_get_cwd(win->current_page));
 }
 
 static void on_go_home(GtkAction* act, FmMainWin* win)
 {
-    fm_main_win_chdir( win, fm_path_get_home());
+    fm_main_win_chdir(win, fm_path_get_home(), NULL);
 }
 
 static void on_go_desktop(GtkAction* act, FmMainWin* win)
 {
-    fm_main_win_chdir(win, fm_path_get_desktop());
+    fm_main_win_chdir(win, fm_path_get_desktop(), NULL);
 }
 
 static void on_go_trash(GtkAction* act, FmMainWin* win)
 {
-    fm_main_win_chdir(win, fm_path_get_trash());
+    fm_main_win_chdir(win, fm_path_get_trash(), NULL);
 }
 
 static void on_go_computer(GtkAction* act, FmMainWin* win)
@@ -1122,22 +1122,22 @@ static void on_go_network(GtkAction* act, FmMainWin* win)
 
 static void on_go_apps(GtkAction* act, FmMainWin* win)
 {
-    fm_main_win_chdir(win, fm_path_get_apps_menu());
+    fm_main_win_chdir(win, fm_path_get_apps_menu(), NULL);
 }
 
 void fm_main_win_chdir_by_name(FmMainWin* win, const char* path_str)
 {
     FmPath* path = fm_path_new_for_str(path_str);
-    fm_main_win_chdir(win, path);
+    fm_main_win_chdir(win, path, NULL);
     fm_path_unref(path);
 }
 
-void fm_main_win_chdir(FmMainWin* win, FmPath* path)
+void fm_main_win_chdir(FmMainWin* win, FmPath* path, FmPath* select_path)
 {
     /* NOTE: fm_tab_page_chdir() calls fm_side_pane_chdir(), which can
      * trigger on_side_pane_chdir() callback. So we need to block it here. */
     g_signal_handlers_block_by_func(win->side_pane, on_side_pane_chdir, win);
-    fm_tab_page_chdir(win->current_page, path);
+    fm_tab_page_chdir(win->current_page, path, select_path);
     g_signal_handlers_unblock_by_func(win->side_pane, on_side_pane_chdir, win);
     _update_hist_buttons(win);
 }
@@ -1348,7 +1348,7 @@ static void on_tab_page_status_text(FmTabPage* page, guint type, const char* sta
 static void on_overall_nav_history_item(GtkMenuItem* mi, FmMainWin* win)
 {
     FmPath* path = (FmPath*)g_object_get_data(G_OBJECT(mi), "path");
-    fm_main_win_chdir(win, path);
+    fm_main_win_chdir(win, path, NULL);
 }
 
 static void update_overall_nav_history_menu(FmMainWin * win)

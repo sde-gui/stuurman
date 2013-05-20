@@ -75,7 +75,7 @@ static GParamSpec * props[N_PROPERTIES] = { NULL, };
 static void fm_tab_page_finalize(GObject *object);
 static void fm_tab_page_get_property (GObject * object, guint prop_id, GValue * value, GParamSpec * pspec);
 static void fm_tab_page_set_property(GObject * object, guint prop_id, const GValue * value, GParamSpec * pspec);
-static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path);
+static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path, FmPath* select_path);
 static void on_folder_fs_info(FmFolder* folder, FmTabPage* page);
 static void on_folder_start_loading(FmFolder* folder, FmTabPage* page);
 static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page);
@@ -373,6 +373,14 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
     }
     fm_folder_query_filesystem_info(folder); /* FIXME: is this needed? */
 
+    if (page->select_path_after_chdir)
+    {
+        fm_folder_view_select_file_path(fv, page->select_path_after_chdir);
+        fm_path_unref(page->select_path_after_chdir);
+        page->select_path_after_chdir = NULL;
+    }
+
+
     // fm_path_entry_set_path(entry, path);
     /* scroll to recorded position */
     item = fm_nav_history_get_cur(page->nav_history);
@@ -504,7 +512,7 @@ static gboolean open_folder_func(GAppLaunchContext* ctx, GList* folder_infos, gp
     FmMainWin* win = FM_MAIN_WIN(user_data);
     GList* l = folder_infos;
     FmFileInfo* fi = (FmFileInfo*)l->data;
-    fm_main_win_chdir(win, fm_file_info_get_path(fi));
+    fm_main_win_chdir(win, fm_file_info_get_path(fi), NULL);
     l=l->next;
     for(; l; l=l->next)
     {
@@ -575,7 +583,7 @@ FmTabPage *fm_tab_page_new(FmPath* path)
     FmTabPage* page = (FmTabPage*)g_object_new(FM_TYPE_TAB_PAGE, NULL);
 
     fm_folder_view_set_show_hidden(page->folder_view, app_config->show_hidden);
-    fm_tab_page_chdir(page, path);
+    fm_tab_page_chdir(page, path, NULL);
     return page;
 }
 
@@ -596,8 +604,14 @@ static void fm_tab_page_update_label(FmTabPage* page, FmPath* path)
     g_free(disp_path);
 }
 
-static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path)
+static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path, FmPath* select_path)
 {
+    if (select_path)
+        select_path = fm_path_ref(select_path);
+    if (page->select_path_after_chdir)
+        fm_path_unref(page->select_path_after_chdir);
+    page->select_path_after_chdir = select_path;
+
     fm_tab_page_update_label(page, path);
 
     free_folder(page);
@@ -627,17 +641,23 @@ static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path)
     g_signal_emit(page, signals[CHDIR], 0, path);
 }
 
-void fm_tab_page_chdir(FmTabPage* page, FmPath* path)
+void fm_tab_page_chdir(FmTabPage* page, FmPath* path, FmPath* select_path)
 {
     g_return_if_fail(page);
 
-    FmPath* cwd = fm_tab_page_get_cwd(page);
+    FmFolderView* fv = page->folder_view;
+
+    FmPath * cwd = fm_tab_page_get_cwd(page);
     int scroll_pos;
     if(cwd && path && fm_path_equal(cwd, path))
+    {
+        if (select_path)
+            fm_folder_view_select_file_path(fv, select_path);
         return;
+    }
     scroll_pos = gtk_adjustment_get_value(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(page->folder_view)));
     fm_nav_history_chdir(page->nav_history, path, scroll_pos);
-    fm_tab_page_chdir_without_history(page, path);
+    fm_tab_page_chdir_without_history(page, path, select_path);
 }
 
 void fm_tab_page_set_show_hidden(FmTabPage* page, gboolean show_hidden)
@@ -694,7 +714,7 @@ void fm_tab_page_forward(FmTabPage* page)
         int scroll_pos = gtk_adjustment_get_value(vadjustment);
         fm_nav_history_forward(page->nav_history, scroll_pos);
         item = fm_nav_history_get_cur(page->nav_history);
-        fm_tab_page_chdir_without_history(page, item->path);
+        fm_tab_page_chdir_without_history(page, item->path, NULL);
     }
 }
 
@@ -709,7 +729,7 @@ void fm_tab_page_back(FmTabPage* page)
         int scroll_pos = gtk_adjustment_get_value(vadjustment);
         fm_nav_history_back(page->nav_history, scroll_pos);
         item = fm_nav_history_get_cur(page->nav_history);
-        fm_tab_page_chdir_without_history(page, item->path);
+        fm_tab_page_chdir_without_history(page, item->path, NULL);
     }
 }
 
@@ -722,7 +742,7 @@ void fm_tab_page_history(FmTabPage* page, GList* history_item_link)
     int scroll_pos = gtk_adjustment_get_value(vadjustment);
     fm_nav_history_jump(page->nav_history, history_item_link, scroll_pos);
     item = fm_nav_history_get_cur(page->nav_history);
-    fm_tab_page_chdir_without_history(page, item->path);
+    fm_tab_page_chdir_without_history(page, item->path, NULL);
 }
 
 const char* fm_tab_page_get_title(FmTabPage* page)
