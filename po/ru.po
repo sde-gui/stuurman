@@ -512,7 +512,7 @@ msgid "Open entered folder"
 msgstr "Открыть введенную папку"
 
 #: ../src/main-win-ui.c:166
-msgid "_Resently Visited"
+msgid "_Recently Visited"
 msgstr "Недавно посещенные"
 
 #: ../src/main-win-ui.c:167
