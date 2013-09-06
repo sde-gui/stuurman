@@ -466,7 +466,7 @@ static void on_side_pane_chdir(FmSidePane* sp, guint button, FmPath* path, FmMai
     if(sp != win->side_pane)
         return;
 
-    if(button == 2) /* middle click */
+    if (button == 2) /* middle click */
         fm_main_win_add_tab(win, path);
     else
         fm_main_win_chdir(win, path, NULL);
@@ -1202,6 +1202,9 @@ static gint fm_main_win_new_tab(FmMainWin* win, FmPath* path)
 
     /* add the tab */
     ret = gtk_notebook_append_page(win->notebook, gpage, GTK_WIDGET(page->tab_label));
+
+    gtk_container_child_set(GTK_CONTAINER(win->notebook), gpage, "tab-expand", TRUE, NULL);
+
     gtk_notebook_set_tab_reorderable(win->notebook, gpage, TRUE);
     gtk_notebook_set_current_page(win->notebook, ret);
 
