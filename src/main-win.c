@@ -540,6 +540,8 @@ static void fm_main_win_init(FmMainWin *win)
 
     gtk_window_set_icon_name(GTK_WINDOW(win), "folder");
 
+    gtk_widget_set_name(GTK_WIDGET(win), "stuurman");
+
     vbox = (GtkBox*)gtk_vbox_new(FALSE, 0);
 
     /* create menu bar and toolbar */
@@ -664,6 +666,7 @@ static void fm_main_win_init(FmMainWin *win)
 
     /* status bar */
     win->statusbar = (GtkStatusbar*)gtk_statusbar_new();
+
     /* status bar column showing volume free space */
     gtk_widget_style_get(GTK_WIDGET(win->statusbar), "shadow-type", &shadow_type, NULL);
     win->vol_status = (GtkFrame*)gtk_frame_new(NULL);
