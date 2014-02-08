@@ -528,6 +528,15 @@ static void fm_main_win_init(FmMainWin *win)
     GtkAccelGroup* accel_grp;
     GtkShadowType shadow_type;
 
+
+    gtk_rc_parse_string(
+        "style \"stuurman-statusbar\" {\n"
+        "  GtkStatusbar::shadow-type = GTK_SHADOW_NONE\n"
+        "}\n"
+        "class \"GtkStatusbar\" style:application \"stuurman-statusbar\"\n"
+    );
+
+
     pcmanfm_ref();
     all_wins = g_slist_prepend(all_wins, win);
 
@@ -582,7 +591,6 @@ static void fm_main_win_init(FmMainWin *win)
 
     gtk_ui_manager_insert_action_group(ui, act_grp, 0);
     gtk_ui_manager_add_ui_from_string(ui, main_menu_xml, -1, NULL);
-    act = gtk_ui_manager_get_action(ui, "/menubar/ViewMenu/ShowHidden");
     act = gtk_ui_manager_get_action(ui, "/menubar/ViewMenu/SidePane/ShowSidePane");
     gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(act),
                                  (app_config->side_pane_mode & FM_SP_HIDE) == 0);
@@ -668,7 +676,8 @@ static void fm_main_win_init(FmMainWin *win)
     win->statusbar = (GtkStatusbar*)gtk_statusbar_new();
 
     /* status bar column showing volume free space */
-    gtk_widget_style_get(GTK_WIDGET(win->statusbar), "shadow-type", &shadow_type, NULL);
+    //gtk_widget_style_get(GTK_WIDGET(win->statusbar), "shadow-type", &shadow_type, NULL);
+    shadow_type = GTK_SHADOW_NONE;
     win->vol_status = (GtkFrame*)gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(win->vol_status, shadow_type);
     gtk_box_pack_start(GTK_BOX(win->statusbar), GTK_WIDGET(win->vol_status), FALSE, TRUE, 0);
