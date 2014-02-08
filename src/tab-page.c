@@ -342,7 +342,9 @@ static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
         g_object_unref(model);
     }
     else
-        fm_folder_view_set_model(fv, NULL);
+    {
+        fm_folder_view_disconnect_model_with_delay(fv);
+    }
 
     page->loading = TRUE;
     g_object_notify_by_pspec(G_OBJECT(page), props[PROP_LOADING]);
@@ -361,14 +363,14 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
      * and create the model again when it's fully loaded. 
      * This optimization, however, is not used for FmFolder objects
      * with incremental loading (search://) */
-    if(fm_folder_view_get_model(fv) == NULL)
+    if(fm_folder_view_get_model(fv) == NULL || fm_folder_model_get_folder(fm_folder_view_get_model(fv)) != folder)
     {
         /* create a model for the folder and set it to the view */
         FmFolderModel* model = fm_folder_model_new(folder, app_config->show_hidden);
-        fm_folder_view_set_model(fv, model);
         fm_folder_model_set_sort(model, app_config->sort_by,
                                  (app_config->sort_type == GTK_SORT_ASCENDING) ?
                                         FM_SORT_ASCENDING : FM_SORT_DESCENDING);
+        fm_folder_view_set_model(fv, model);
         g_object_unref(model);
     }
     fm_folder_query_filesystem_info(folder); /* FIXME: is this needed? */
