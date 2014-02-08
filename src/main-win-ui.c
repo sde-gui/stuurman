@@ -56,15 +56,17 @@ static const char main_menu_xml[] =
   "<menu action='ViewMenu'>"
     "<menuitem action='Reload'/>"
     "<separator/>"
+    "<menu action='Toolbars'>"
+      "<menuitem action='ShowMenubar' />"
+      "<menuitem action='ShowToolbar' />"
+      "<menuitem action='ShowStatusbar' />"
+    "</menu>"
     "<menu action='SidePane'>"
       "<menuitem action='ShowSidePane' />"
       "<separator/>"
       "<menuitem action='Places' />"
       "<menuitem action='DirTree' />"
     "</menu>"
-    "<menuitem action='ShowMenubar' />"
-    "<menuitem action='ShowToolbar' />"
-    "<menuitem action='ShowStatusbar' />"
     /* "<menuitem action='TwinPane'/>" */
     "<menuitem action='Fullscreen' />"
     "<separator/>"
@@ -150,6 +152,7 @@ static GtkActionEntry main_win_actions[]=
         {"Pref", GTK_STOCK_PREFERENCES, N_("Prefere_nces"), NULL, NULL, G_CALLBACK(on_preference)},
     {"ViewMenu", NULL, N_("_View"), NULL, NULL, NULL},
         {"Reload", GTK_STOCK_REFRESH, N_("_Reload Folder"), "F5", N_("Reload current folder"), G_CALLBACK(on_reload)},
+        {"Toolbars", NULL, N_("_Toolbars"), NULL, NULL, NULL},
         {"SidePane", NULL, N_("Side _Pane"), NULL, NULL, NULL},
         /* other see below: 'ShowHidden' 'ShowStatus' 'Fullscreen' 'IconView'... */
         {"Sort", NULL, N_("Arran_ge Items"), NULL, NULL, NULL},
@@ -190,9 +193,9 @@ static GtkToggleActionEntry main_win_toggle_actions[]=
 {
     {"ShowHidden", NULL, N_("Show Hidde_n"), "<Ctrl>H", NULL, G_CALLBACK(on_show_hidden), FALSE},
     {"ShowSidePane", NULL, N_("Sho_w Side Pane"), "F9", NULL, G_CALLBACK(on_show_side_pane), TRUE},
-    {"ShowMenubar", NULL, N_("_Menubar"), "<Ctrl>M", NULL, G_CALLBACK(on_show_menubar), TRUE},
-    {"ShowToolbar", NULL, N_("_Toolbar"), "<Ctrl><Shift>M", NULL, G_CALLBACK(on_show_toolbar), TRUE},
-    {"ShowStatusbar", NULL, N_("Statusb_ar"), "<Ctrl>B", NULL, G_CALLBACK(on_show_statusbar), TRUE},
+    {"ShowMenubar", NULL, N_("_Menu Bar"), "<Ctrl>M", NULL, G_CALLBACK(on_show_menubar), TRUE},
+    {"ShowToolbar", NULL, N_("Navigation _Toolbar"), "<Ctrl><Shift>M", NULL, G_CALLBACK(on_show_toolbar), TRUE},
+    {"ShowStatusbar", NULL, N_("Status B_ar"), "<Ctrl>B", NULL, G_CALLBACK(on_show_statusbar), TRUE},
     {"TwinPane", NULL, N_("T_win Pane Mode"), "F3", NULL, NULL, TRUE},
     {"Fullscreen", NULL, N_("Fullscreen _Mode"), "F11", NULL, G_CALLBACK(on_fullscreen), FALSE}
 };
