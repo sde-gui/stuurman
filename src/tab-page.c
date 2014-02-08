@@ -382,6 +382,7 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
         page->select_path_after_chdir = NULL;
     }
 
+    page->loading = FALSE;
 
     // fm_path_entry_set_path(entry, path);
     /* scroll to recorded position */
@@ -399,7 +400,6 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
     fm_unset_busy_cursor(GTK_WIDGET(page));
     /* g_debug("finish-loading"); */
 
-    page->loading = FALSE;
     g_object_notify_by_pspec(G_OBJECT(page), props[PROP_LOADING]);
 }
 
@@ -438,7 +438,8 @@ static char* format_status_text(FmTabPage* page)
 {
     FmFolderModel* model = fm_folder_view_get_model(page->folder_view);
     FmFolder* folder = fm_folder_view_get_folder(page->folder_view);
-    if(model && folder)
+
+    if (model && folder && folder == page->folder)
     {
         FmFileInfoList* files = fm_folder_get_files(folder);
         GString* msg = g_string_sized_new(128);
@@ -447,6 +448,11 @@ static char* format_status_text(FmTabPage* page)
         int hidden_files = total_files - shown_files;
         const char* visible_fmt = ngettext("%d item", "%d items", shown_files);
         const char* hidden_fmt = ngettext(" (%d hidden)", " (%d hidden)", hidden_files);
+
+        if (page->loading && fm_folder_is_incremental(folder))
+        {
+            g_string_append(msg, _("Loading... "));
+        }
 
         g_string_append_printf(msg, visible_fmt, shown_files);
         if(hidden_files > 0)
