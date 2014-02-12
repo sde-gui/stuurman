@@ -329,21 +329,24 @@ static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
     /* FIXME: this should be set on toplevel parent */
     fm_set_busy_cursor(GTK_WIDGET(page));
 
-    if(fm_folder_is_incremental(folder))
+    if (fm_folder_view_get_model(fv) == NULL || fm_folder_model_get_folder(fm_folder_view_get_model(fv)) != folder)
     {
-        /* create a model for the folder and set it to the view
-           it is delayed for non-incremental folders since adding rows into
-           model is much faster without handlers connected to its signals */
-        FmFolderModel* model = fm_folder_model_new(folder, FALSE);
-        fm_folder_view_set_model(fv, model);
-        fm_folder_model_set_sort(model, app_config->sort_by,
-                                 (app_config->sort_type == GTK_SORT_ASCENDING) ?
-                                        FM_SORT_ASCENDING : FM_SORT_DESCENDING);
-        g_object_unref(model);
-    }
-    else
-    {
-        fm_folder_view_disconnect_model_with_delay(fv);
+        if(fm_folder_is_incremental(folder))
+        {
+            /* create a model for the folder and set it to the view
+               it is delayed for non-incremental folders since adding rows into
+               model is much faster without handlers connected to its signals */
+            FmFolderModel* model = fm_folder_model_new(folder, FALSE);
+            fm_folder_view_set_model(fv, model);
+            fm_folder_model_set_sort(model, app_config->sort_by,
+                                     (app_config->sort_type == GTK_SORT_ASCENDING) ?
+                                            FM_SORT_ASCENDING : FM_SORT_DESCENDING);
+            g_object_unref(model);
+        }
+        else
+        {
+            fm_folder_view_disconnect_model_with_delay(fv);
+        }
     }
 
     page->loading = TRUE;
