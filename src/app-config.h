@@ -92,7 +92,7 @@ struct _FmAppConfig
     guint view_mode;
     gboolean show_hidden;
     GtkSortType sort_type;
-    int sort_by;
+    FmFolderModelCol sort_by;
 
     char* su_cmd;
 };

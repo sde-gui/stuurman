@@ -140,11 +140,15 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
         cfg->sort_type = GTK_SORT_DESCENDING;
     else
         cfg->sort_type = GTK_SORT_ASCENDING;
-    fm_key_file_get_int(kf, "ui", "sort_by", &cfg->sort_by);
 
-/* FIXME: libsmfm is not yet initialized here, so FM_FOLDER_MODEL_COL_IS_VALID() always fails. */
-/*    if(!FM_FOLDER_MODEL_COL_IS_VALID(cfg->sort_by))
-        cfg->sort_by = COL_FILE_NAME;*/
+    char * sort_by = g_key_file_get_string(kf, "ui", "sort_by", NULL);
+    if (sort_by)
+    {
+        FmFolderModelCol n = fm_folder_model_get_col_by_name(sort_by);
+        if (fm_folder_model_col_is_valid(n))
+            cfg->sort_by = n;
+        g_free(sort_by);
+    }
 }
 
 void fm_app_config_load_from_profile(FmAppConfig* cfg, const char* name)
@@ -190,6 +194,8 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
     {
         GString* buf = g_string_sized_new(1024);
 
+        const char * sort_by = fm_folder_model_col_get_name(cfg->sort_by);
+
         g_string_append(buf, "[config]\n");
         g_string_append_printf(buf, "bm_open_method=%d\n", cfg->bm_open_method);
         if(cfg->su_cmd && *cfg->su_cmd)
@@ -217,7 +223,8 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append_printf(buf, "view_mode=%d\n", cfg->view_mode);
         g_string_append_printf(buf, "show_hidden=%d\n", cfg->show_hidden);
         g_string_append_printf(buf, "sort_type=%d\n", cfg->sort_type);
-        g_string_append_printf(buf, "sort_by=%d\n", cfg->sort_by);
+        if (sort_by)
+            g_string_append_printf(buf, "sort_by=%s\n", sort_by);
 
         path = g_build_filename(dir_path, APP_CONFIG_NAME, NULL);
         g_file_set_contents(path, buf->str, buf->len, NULL);

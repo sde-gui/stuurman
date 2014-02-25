@@ -206,10 +206,11 @@ int main(int argc, char** argv)
 
     config = fm_app_config_new(); /* this automatically load libfm config file. */
 
+    fm_gtk_init(config);
+
     /* load pcmanfm-specific config file */
     fm_app_config_load_from_profile(FM_APP_CONFIG(config), profile);
 
-    fm_gtk_init(config);
     /* the main part */
     if(pcmanfm_run(gdk_screen_get_number(gdk_screen_get_default())))
     {
