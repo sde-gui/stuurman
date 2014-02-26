@@ -281,8 +281,12 @@ static void on_folder_view_sel_changed(FmFolderView* fv, gint n_sel, FmMainWin* 
     GtkAction* act;
     gboolean has_selected = n_sel > 0;
 
-    if(fv != win->folder_view)
+    if (!win->ui)
         return;
+
+    if (fv != win->folder_view)
+        return;
+
     act = gtk_ui_manager_get_action(win->ui, "/menubar/EditMenu/Cut");
     gtk_action_set_sensitive(act, has_selected);
     act = gtk_ui_manager_get_action(win->ui, "/menubar/EditMenu/Copy");
@@ -764,7 +768,7 @@ static void fm_main_win_destroy(GtkObject *object)
     win = (FmMainWin*)object;
 
     /* Gtk+ runs destroy method twice */
-    if(win->win_group)
+    if (win->win_group)
     {
         layout_visibility_finalize(win);
 
