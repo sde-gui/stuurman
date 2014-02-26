@@ -23,19 +23,21 @@
 
 static const char main_menu_xml[] =
 "<menubar>"
-  "<menu action='FileMenu'>"
-    "<menuitem action='New'/>"
+  "<menu action='WindowMenu'>"
+    "<menuitem action='NewWindow'/>"
     "<menuitem action='NewTab'/>"
     "<separator/>"
+    "<menuitem action='Preferences'/>"
+    "<separator/>"
+    "<menuitem action='CloseTab'/>"
+    "<menuitem action='CloseWindow'/>"
+  "</menu>"
+  "<menu action='EditMenu'>"
     "<menu action='CreateNew'>"
       "<menuitem action='NewFolder'/>"
       "<menuitem action='NewBlank'/>"
     "</menu>"
     "<separator/>"
-    "<menuitem action='CloseTab'/>"
-    "<menuitem action='Close'/>"
-  "</menu>"
-  "<menu action='EditMenu'>"
     "<menuitem action='Cut'/>"
     "<menuitem action='Copy'/>"
     "<menuitem action='Paste'/>"
@@ -50,8 +52,6 @@ static const char main_menu_xml[] =
     "<separator/>"
     "<menuitem action='SelAll'/>"
     "<menuitem action='InvSel'/>"
-    "<separator/>"
-    "<menuitem action='Pref'/>"
   "</menu>"
   "<menu action='ViewMenu'>"
     "<menuitem action='Reload'/>"
@@ -132,13 +132,14 @@ static const char main_menu_xml[] =
 /* For actions that are bounced to FmFolderView - check accels for accordance */
 static GtkActionEntry main_win_actions[]=
 {
-    {"FileMenu", NULL, N_("_File"), NULL, NULL, NULL},
-        {"New", GTK_STOCK_NEW, N_("_New Window"), "<Ctrl>N", NULL, G_CALLBACK(on_new_win)},
+    {"WindowMenu", NULL, N_("_Window"), NULL, NULL, NULL},
+        {"NewWindow", GTK_STOCK_NEW, N_("_New Window"), "<Ctrl>N", NULL, G_CALLBACK(on_new_win)},
         {"NewTab", "tab-new", N_("New T_ab"), "<Ctrl>T", N_("Create new tab for this folder"), G_CALLBACK(on_new_tab)},
-        {"CreateNew", GTK_STOCK_ADD, N_("C_reate New..."), "", NULL, NULL},
         {"CloseTab", GTK_STOCK_CLOSE, N_("_Close Tab"), "<Ctrl>W", NULL, G_CALLBACK(on_close_tab)},
-        {"Close", GTK_STOCK_QUIT, N_("Close _Window"), "<Ctrl>Q", NULL, G_CALLBACK(on_close_win)},
+        {"CloseWindow", GTK_STOCK_QUIT, N_("Close _Window"), "<Ctrl>Q", NULL, G_CALLBACK(on_close_win)},
+        {"Preferences", GTK_STOCK_PREFERENCES, N_("Prefere_nces"), NULL, NULL, G_CALLBACK(on_preference)},
     {"EditMenu", NULL, N_("_Edit"), NULL, NULL, NULL},
+        {"CreateNew", GTK_STOCK_ADD, N_("C_reate New..."), "", NULL, NULL},
         {"Cut", GTK_STOCK_CUT, NULL, NULL, NULL, G_CALLBACK(bounce_action)},
         {"Copy", GTK_STOCK_COPY, NULL, NULL, NULL, G_CALLBACK(bounce_action)},
         {"Paste", GTK_STOCK_PASTE, NULL, NULL, NULL, G_CALLBACK(bounce_action)},
@@ -149,7 +150,6 @@ static GtkActionEntry main_win_actions[]=
         {"CopyTo", NULL, N_("C_opy To..."), NULL, NULL, G_CALLBACK(on_copy_to)},
         {"SelAll", GTK_STOCK_SELECT_ALL, NULL, "<Ctrl>A", NULL, G_CALLBACK(bounce_action)},
         {"InvSel", NULL, N_("_Invert Selection"), "<Ctrl>I", NULL, G_CALLBACK(bounce_action)},
-        {"Pref", GTK_STOCK_PREFERENCES, N_("Prefere_nces"), NULL, NULL, G_CALLBACK(on_preference)},
     {"ViewMenu", NULL, N_("_View"), NULL, NULL, NULL},
         {"Reload", GTK_STOCK_REFRESH, N_("_Reload Folder"), "F5", N_("Reload current folder"), G_CALLBACK(on_reload)},
         {"Toolbars", NULL, N_("_Toolbars"), NULL, NULL, NULL},
