@@ -516,6 +516,32 @@ static void on_side_pane_mode_changed(FmSidePane* sp, FmMainWin* win)
     }
 }
 
+void fm_main_win_update_file_menu(FmMainWin * window)
+{
+    GtkMenu * popup = window->folder_view ? fm_folder_view_get_popup_for_selected_files(window->folder_view) : NULL;
+    gtk_widget_set_sensitive(GTK_WIDGET(window->file_menu_item), popup != NULL);
+
+    if (popup)
+    {
+        g_object_ref(popup);
+        gtk_menu_detach(popup);
+        gtk_menu_item_set_submenu(window->file_menu_item, GTK_WIDGET(popup));
+        g_object_unref(popup);
+    }
+    else
+    {
+        gtk_menu_item_set_submenu(window->file_menu_item, NULL);
+    }
+}
+
+
+static void on_file_menu_item_ancestor_select(GtkWidget * widget, gpointer user_data)
+{
+    FmMainWin * window = (FmMainWin *) user_data;
+    fm_main_win_update_file_menu(window);
+}
+
+
 #include "main-win-ui.c" /* ui xml definitions and actions */
 
 static void fm_main_win_init(FmMainWin *win)
@@ -628,12 +654,22 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_box_pack_start( vbox, GTK_WIDGET(win->toolbar), FALSE, TRUE, 0 );
 
     /* overall history */
-    overall_nav_history_initialize();
-    GtkWidget* mi = gtk_ui_manager_get_widget(ui, "/menubar/GoMenu/RecentlyVisitedMenu");
-    win->overall_nav_history_menu = GTK_WIDGET(gtk_menu_item_get_submenu(GTK_MENU_ITEM(mi)));
+    {
+        overall_nav_history_initialize();
+        GtkWidget* mi = gtk_ui_manager_get_widget(ui, "/menubar/GoMenu/RecentlyVisitedMenu");
+        win->overall_nav_history_menu = GTK_WIDGET(gtk_menu_item_get_submenu(GTK_MENU_ITEM(mi)));
+    }
 
     /* load bookmarks menu */
     load_bookmarks(win, ui);
+
+    /* file menu  */
+    {
+        GtkWidget * mi = gtk_ui_manager_get_widget(ui, "/menubar/EditMenu/FileMenu");
+        win->file_menu_item = GTK_MENU_ITEM(mi);
+        GtkWidget * ancestor_menu_item = gtk_ui_manager_get_widget(ui, "/menubar/EditMenu");
+        g_signal_connect(ancestor_menu_item, "select", G_CALLBACK(on_file_menu_item_ancestor_select), win);
+    }
 
     /* the location bar */
     win->location = fm_path_entry_new();

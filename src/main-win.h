@@ -61,6 +61,7 @@ struct _FmMainWin
     GtkFrame* vol_status;
     GtkMenuShell* bookmarks_menu;
     GtkWidget* history_menu;
+    GtkMenuItem* file_menu_item;
     GtkMenu* popup;
     /* <private> */
     FmNavHistory* nav_history;

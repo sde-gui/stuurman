@@ -33,6 +33,9 @@ static const char main_menu_xml[] =
     "<menuitem action='CloseWindow'/>"
   "</menu>"
   "<menu action='EditMenu'>"
+    "<menu action='FileMenu'>"
+    "</menu>"
+    "<separator/>"
     "<menu action='CreateNew'>"
       "<menuitem action='NewFolder'/>"
       "<menuitem action='NewBlank'/>"
@@ -139,6 +142,7 @@ static GtkActionEntry main_win_actions[]=
         {"CloseWindow", GTK_STOCK_QUIT, N_("Close _Window"), "<Ctrl>Q", NULL, G_CALLBACK(on_close_win)},
         {"Preferences", GTK_STOCK_PREFERENCES, N_("Prefere_nces..."), NULL, NULL, G_CALLBACK(on_preference)},
     {"EditMenu", NULL, N_("_Edit"), NULL, NULL, NULL},
+        {"FileMenu", NULL, N_("_File"), NULL, NULL, NULL},
         {"CreateNew", GTK_STOCK_ADD, N_("C_reate New"), "", NULL, NULL},
         {"Cut", GTK_STOCK_CUT, NULL, NULL, NULL, G_CALLBACK(bounce_action)},
         {"Copy", GTK_STOCK_COPY, NULL, NULL, NULL, G_CALLBACK(bounce_action)},
