@@ -1362,7 +1362,7 @@ static void on_folder_view_clicked(FmFolderView* fv, FmFolderViewClickType type,
     case FM_FV_CONTEXT_MENU:
         break; /* handled by FmFolderView */
     case FM_FV_MIDDLE_CLICK:
-        if(fi && fm_file_info_is_dir(fi))
+        if(fi && fm_file_info_is_directory(fi))
             fm_main_win_add_tab(win, fm_file_info_get_path(fi));
         break;
     case FM_FV_CLICK_NONE: ;

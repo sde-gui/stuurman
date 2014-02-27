@@ -496,7 +496,7 @@ static void on_open_folder_in_terminal(GtkAction* act, FmMainWin* win)
     for(l=fm_file_info_list_peek_head_link(files);l;l=l->next)
     {
         FmFileInfo* fi = (FmFileInfo*)l->data;
-        if(fm_file_info_is_dir(fi) /*&& !fm_file_info_is_virtual(fi)*/)
+        if (fm_file_info_is_directory(fi) /*&& !fm_file_info_is_virtual(fi)*/)
             pcmanfm_open_folder_in_terminal(GTK_WINDOW(win), fm_file_info_get_path(fi));
     }
     fm_file_info_list_unref(files);
@@ -510,7 +510,7 @@ static void update_files_popup(FmFolderView* fv, GtkWindow* win,
     GList* l;
 
     for(l = fm_file_info_list_peek_head_link(files); l; l = l->next)
-        if(!fm_file_info_is_dir(l->data))
+        if(!fm_file_info_is_directory(l->data))
             return; /* actions are valid only if all selected are directories */
     gtk_action_group_set_translation_domain(act_grp, NULL);
     gtk_action_group_add_actions(act_grp, folder_menu_actions,
