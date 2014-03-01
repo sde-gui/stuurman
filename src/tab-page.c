@@ -76,6 +76,7 @@ static void fm_tab_page_finalize(GObject *object);
 static void fm_tab_page_get_property (GObject * object, guint prop_id, GValue * value, GParamSpec * pspec);
 static void fm_tab_page_set_property(GObject * object, guint prop_id, const GValue * value, GParamSpec * pspec);
 static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path, FmPath* select_path);
+
 static void on_folder_fs_info(FmFolder* folder, FmTabPage* page);
 static void on_folder_start_loading(FmFolder* folder, FmTabPage* page);
 static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page);
@@ -83,9 +84,11 @@ static void on_folder_removed(FmFolder* folder, FmTabPage* page);
 static void on_folder_unmount(FmFolder* folder, FmTabPage* page);
 static void on_folder_content_changed(FmFolder* folder, FmTabPage* page);
 static FmJobErrorAction on_folder_error(FmFolder* folder, GError* err, FmJobErrorSeverity severity, FmTabPage* page);
+static void on_folder_report_status(FmFolder * folder, const char * message, FmTabPage * page);
 
 static void on_folder_view_sel_changed(FmFolderView* fv, gint n_sel, FmTabPage* page);
-static char* format_status_text(FmTabPage* page);
+
+static void update_status_text_normal(FmTabPage * page);
 
 #if GTK_CHECK_VERSION(3, 0, 0)
 static void fm_tab_page_destroy(GtkWidget *page);
@@ -165,6 +168,9 @@ static void fm_tab_page_finalize(GObject *object)
     for(i = 0; i < FM_STATUS_TEXT_NUM; ++i)
         g_free(page->status_text[i]);
 
+    if (page->folder_status_message)
+        g_free(page->folder_status_message);
+
     G_OBJECT_CLASS(fm_tab_page_parent_class)->finalize(object);
 }
 
@@ -213,6 +219,7 @@ static void free_folder(FmTabPage* page)
         g_signal_handlers_disconnect_by_func(page->folder, on_folder_content_changed, page);
         g_signal_handlers_disconnect_by_func(page->folder, on_folder_removed, page);
         g_signal_handlers_disconnect_by_func(page->folder, on_folder_unmount, page);
+        g_signal_handlers_disconnect_by_func(page->folder, on_folder_report_status, page);
         g_object_unref(page->folder);
         page->folder = NULL;
     }
@@ -249,12 +256,7 @@ void fm_tab_page_destroy(GtkObject *object)
 
 static void on_folder_content_changed(FmFolder* folder, FmTabPage* page)
 {
-    /* update status text */
-    g_free(page->status_text[FM_STATUS_TEXT_NORMAL]);
-    page->status_text[FM_STATUS_TEXT_NORMAL] = format_status_text(page);
-    g_signal_emit(page, signals[STATUS], 0,
-                  (guint)FM_STATUS_TEXT_NORMAL,
-                  page->status_text[FM_STATUS_TEXT_NORMAL]);
+    update_status_text_normal(page);
 }
 
 static void on_folder_view_sel_changed(FmFolderView* fv, gint n_sel, FmTabPage* page)
@@ -320,6 +322,16 @@ static FmJobErrorAction on_folder_error(FmFolder* folder, GError* err, FmJobErro
         fm_show_error(win, NULL, err->message);
     }
     return FM_JOB_CONTINUE;
+}
+
+static void on_folder_report_status(FmFolder * folder, const char * message, FmTabPage * page)
+{
+    if (page->folder_status_message)
+        g_free(page->folder_status_message);
+
+    page->folder_status_message = g_strdup(message);
+
+    update_status_text_normal(page);
 }
 
 static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
@@ -392,13 +404,7 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
     item = fm_nav_history_get_cur(page->nav_history);
     gtk_adjustment_set_value(gtk_scrolled_window_get_vadjustment(scroll), item->scroll_pos);
 
-    /* update status bar */
-    /* update status text */
-    g_free(page->status_text[FM_STATUS_TEXT_NORMAL]);
-    page->status_text[FM_STATUS_TEXT_NORMAL] = format_status_text(page);
-    g_signal_emit(page, signals[STATUS], 0,
-                  (guint)FM_STATUS_TEXT_NORMAL,
-                  page->status_text[FM_STATUS_TEXT_NORMAL]);
+    update_status_text_normal(page);
 
     fm_unset_busy_cursor(GTK_WIDGET(page));
     /* g_debug("finish-loading"); */
@@ -462,7 +468,28 @@ static char* format_status_text(FmTabPage* page)
             g_string_append_printf(msg, hidden_fmt, hidden_files);
         return g_string_free(msg, FALSE);
     }
+
+    if (page->folder && page->loading && page->folder_status_message)
+    {
+        GString * message = g_string_sized_new(128);
+        char * path = fm_path_display_name(fm_folder_get_path(page->folder), TRUE);
+        g_string_append_printf(message, _("Loading %s: %s"), path, page->folder_status_message);
+        g_free(path);
+        return g_string_free(message, FALSE);
+    }
+
     return NULL;
+}
+
+static void update_status_text_normal(FmTabPage * page)
+{
+    g_free(page->status_text[FM_STATUS_TEXT_NORMAL]);
+
+    page->status_text[FM_STATUS_TEXT_NORMAL] = format_status_text(page);
+
+    g_signal_emit(page, signals[STATUS], 0,
+                  (guint)FM_STATUS_TEXT_NORMAL,
+                  page->status_text[FM_STATUS_TEXT_NORMAL]);
 }
 
 static void on_open_in_new_tab(GtkAction* act, FmMainWin* win)
@@ -627,6 +654,13 @@ static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path, FmP
 
     free_folder(page);
 
+    if (page->folder_status_message)
+    {
+        g_free(page->folder_status_message);
+        page->folder_status_message = NULL;
+    }
+
+
     page->folder = fm_folder_from_path(path);
     g_signal_connect(page->folder, "start-loading", G_CALLBACK(on_folder_start_loading), page);
     g_signal_connect(page->folder, "finish-loading", G_CALLBACK(on_folder_finish_loading), page);
@@ -636,6 +670,7 @@ static void fm_tab_page_chdir_without_history(FmTabPage* page, FmPath* path, FmP
     g_signal_connect(page->folder, "removed", G_CALLBACK(on_folder_removed), page);
     g_signal_connect(page->folder, "unmount", G_CALLBACK(on_folder_unmount), page);
     g_signal_connect(page->folder, "content-changed", G_CALLBACK(on_folder_content_changed), page);
+    g_signal_connect(page->folder, "report-status", G_CALLBACK(on_folder_report_status), page);
 
     if(fm_folder_is_loaded(page->folder))
     {
@@ -676,12 +711,8 @@ void fm_tab_page_set_show_hidden(FmTabPage* page, gboolean show_hidden)
     g_return_if_fail(page);
 
     fm_folder_view_set_show_hidden(page->folder_view, show_hidden);
-    /* update status text */
-    g_free(page->status_text[FM_STATUS_TEXT_NORMAL]);
-    page->status_text[FM_STATUS_TEXT_NORMAL] = format_status_text(page);
-    g_signal_emit(page, signals[STATUS], 0,
-                  (guint)FM_STATUS_TEXT_NORMAL,
-                  page->status_text[FM_STATUS_TEXT_NORMAL]);
+
+    update_status_text_normal(page);
 }
 
 FmPath* fm_tab_page_get_cwd(FmTabPage* page)

@@ -58,7 +58,9 @@ struct _FmTabPage
     FmNavHistory* nav_history;
     char* status_text[FM_STATUS_TEXT_NUM];
     FmFolder* folder;
+
     gboolean loading;
+    char * folder_status_message;
 
     FmPath * select_path_after_chdir;
 };
