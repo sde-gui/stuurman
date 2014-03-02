@@ -620,8 +620,8 @@ static void fm_main_win_init(FmMainWin *win)
         "class \"GtkStatusbar\" style:application \"stuurman-statusbar\"\n"
     );
 
-
     pcmanfm_ref();
+
     all_wins = g_slist_prepend(all_wins, win);
 
     /* every window should have its own window group.
@@ -647,6 +647,8 @@ static void fm_main_win_init(FmMainWin *win)
 
     gtk_ui_manager_insert_action_group(ui, win->action_group, 0);
     gtk_ui_manager_add_ui_from_string(ui, main_menu_xml, -1, NULL);
+
+    gtk_ui_manager_set_add_tearoffs(ui, app_config->use_tearoffs);
 
     win->menubar = gtk_ui_manager_get_widget(ui, "/menubar");
 

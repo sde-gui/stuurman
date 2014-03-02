@@ -78,6 +78,7 @@ struct _FmAppConfig
     gboolean statusbar_visible;
 
     /* ui */
+    gboolean use_tearoffs;
     gboolean full_path_in_title;
     gboolean always_show_tabs;
     gboolean hide_close_btn;

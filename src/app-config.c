@@ -115,6 +115,7 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
     fm_key_file_get_bool(kf, "layout", "statusbar_visible", &cfg->statusbar_visible);
 
     /* ui */
+    fm_key_file_get_bool(kf, "ui", "use_tearoffs", &cfg->use_tearoffs);
     fm_key_file_get_bool(kf, "ui", "full_path_in_title", &cfg->full_path_in_title);
     fm_key_file_get_int(kf, "ui", "always_show_tabs", &cfg->always_show_tabs);
     fm_key_file_get_int(kf, "ui", "hide_close_btn", &cfg->hide_close_btn);
@@ -212,6 +213,7 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append_printf(buf, "statusbar_visible=%d\n", cfg->statusbar_visible);
 
         g_string_append(buf, "\n[ui]\n");
+        g_string_append_printf(buf, "use_tearoffs=%d\n", cfg->use_tearoffs);
         g_string_append_printf(buf, "full_path_in_title=%d\n", cfg->full_path_in_title);
         g_string_append_printf(buf, "always_show_tabs=%d\n", cfg->always_show_tabs);
         g_string_append_printf(buf, "max_tab_chars=%d\n", cfg->max_tab_chars);
