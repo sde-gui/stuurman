@@ -548,12 +548,66 @@ static void on_file_menu_item_ancestor_select(GtkWidget * widget, gpointer user_
 
 #include "main-win-ui.c" /* ui xml definitions and actions */
 
+static void create_action_group(FmMainWin * win)
+{
+    GtkActionGroup * action_group = win->action_group = gtk_action_group_new("Main");
+
+    gtk_action_group_set_translation_domain(action_group, NULL);
+
+    gtk_action_group_add_actions(action_group, main_win_actions, G_N_ELEMENTS(main_win_actions), win);
+    gtk_action_group_add_toggle_actions(action_group, main_win_toggle_actions,
+                                        G_N_ELEMENTS(main_win_toggle_actions), win);
+    gtk_action_group_add_radio_actions(action_group, main_win_mode_actions,
+                                       G_N_ELEMENTS(main_win_mode_actions),
+                                       app_config->view_mode,
+                                       G_CALLBACK(on_change_mode), win);
+    gtk_action_group_add_radio_actions(action_group, main_win_sort_type_actions,
+                                       G_N_ELEMENTS(main_win_sort_type_actions),
+                                       app_config->sort_type,
+                                       G_CALLBACK(on_sort_type), win);
+    gtk_action_group_add_radio_actions(action_group, main_win_sort_by_actions,
+                                       G_N_ELEMENTS(main_win_sort_by_actions),
+                                       app_config->sort_by,
+                                       G_CALLBACK(on_sort_by), win);
+    gtk_action_group_add_radio_actions(action_group, main_win_side_bar_mode_actions,
+                                       G_N_ELEMENTS(main_win_side_bar_mode_actions),
+                                       (app_config->side_pane_mode & FM_SP_MODE_MASK),
+                                       G_CALLBACK(on_side_pane_mode), win);
+
+    {
+        GtkAction * action = gtk_action_group_get_action(action_group, "ByName");
+        g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    }
+
+    {
+        GtkAction * action = gtk_action_group_get_action(action_group, "ByMTime");
+        g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    }
+
+    {
+        GtkAction * action = gtk_action_group_get_action(action_group, "BySize");
+        g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    }
+
+    {
+        GtkAction * action = gtk_action_group_get_action(action_group, "ByType");
+        g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
+    }
+
+    {
+        GtkAction * action = gtk_action_group_get_action(action_group, "ShowSidePane");
+        gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(action),
+                                     (app_config->side_pane_mode & FM_SP_HIDE) == 0);
+    }
+
+}
+
 static void fm_main_win_init(FmMainWin *win)
 {
     GtkBox *vbox;
     GtkToolItem *toolitem;
     GtkUIManager* ui;
-    GtkActionGroup* act_grp;
+    GtkActionGroup* action_group;
     GtkAction* act;
     GtkAccelGroup* accel_grp;
     GtkShadowType shadow_type;
@@ -583,47 +637,16 @@ static void fm_main_win_init(FmMainWin *win)
 
     vbox = (GtkBox*)gtk_vbox_new(FALSE, 0);
 
+    create_action_group(win);
+
     /* create menu bar and toolbar */
     ui = gtk_ui_manager_new();
-    win->action_group = act_grp = gtk_action_group_new("Main");
-    gtk_action_group_set_translation_domain(act_grp, NULL);
-    gtk_action_group_add_actions(act_grp, main_win_actions, G_N_ELEMENTS(main_win_actions), win);
-    gtk_action_group_add_toggle_actions(act_grp, main_win_toggle_actions,
-                                        G_N_ELEMENTS(main_win_toggle_actions), win);
-    gtk_action_group_add_radio_actions(act_grp, main_win_mode_actions,
-                                       G_N_ELEMENTS(main_win_mode_actions),
-                                       app_config->view_mode,
-                                       G_CALLBACK(on_change_mode), win);
-    gtk_action_group_add_radio_actions(act_grp, main_win_sort_type_actions,
-                                       G_N_ELEMENTS(main_win_sort_type_actions),
-                                       app_config->sort_type,
-                                       G_CALLBACK(on_sort_type), win);
-    gtk_action_group_add_radio_actions(act_grp, main_win_sort_by_actions,
-                                       G_N_ELEMENTS(main_win_sort_by_actions),
-                                       app_config->sort_by,
-                                       G_CALLBACK(on_sort_by), win);
-    gtk_action_group_add_radio_actions(act_grp, main_win_side_bar_mode_actions,
-                                       G_N_ELEMENTS(main_win_side_bar_mode_actions),
-                                       (app_config->side_pane_mode & FM_SP_MODE_MASK),
-                                       G_CALLBACK(on_side_pane_mode), win);
 
     accel_grp = gtk_ui_manager_get_accel_group(ui);
     gtk_window_add_accel_group(GTK_WINDOW(win), accel_grp);
 
-    GtkAction * action = gtk_action_group_get_action(act_grp, "ByName");
-    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
-    action = gtk_action_group_get_action(act_grp, "ByMTime");
-    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
-    action = gtk_action_group_get_action(act_grp, "BySize");
-    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
-    action = gtk_action_group_get_action(act_grp, "ByType");
-    g_signal_connect(action, "notify::active", G_CALLBACK(on_sort_by_active), win);
-
-    gtk_ui_manager_insert_action_group(ui, act_grp, 0);
+    gtk_ui_manager_insert_action_group(ui, win->action_group, 0);
     gtk_ui_manager_add_ui_from_string(ui, main_menu_xml, -1, NULL);
-    act = gtk_ui_manager_get_action(ui, "/menubar/ViewMenu/SidePane/ShowSidePane");
-    gtk_toggle_action_set_active(GTK_TOGGLE_ACTION(act),
-                                 (app_config->side_pane_mode & FM_SP_HIDE) == 0);
 
     win->menubar = gtk_ui_manager_get_widget(ui, "/menubar");
 
