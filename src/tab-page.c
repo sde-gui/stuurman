@@ -254,11 +254,6 @@ void fm_tab_page_destroy(GtkObject *object)
 #endif
 }
 
-static void on_folder_content_changed(FmFolder* folder, FmTabPage* page)
-{
-    update_status_text_normal(page);
-}
-
 static void on_folder_view_sel_changed(FmFolderView* fv, gint n_sel, FmTabPage* page)
 {
     char* msg = page->status_text[FM_STATUS_TEXT_SELECTED_FILES];
@@ -299,6 +294,18 @@ static void on_folder_view_sel_changed(FmFolderView* fv, gint n_sel, FmTabPage* 
                   (guint)FM_STATUS_TEXT_SELECTED_FILES, msg);
 }
 
+/*****************************************************************************/
+
+static void on_model_filtering_changed(FmFolderModel * model, FmTabPage * page)
+{
+    update_status_text_normal(page);
+}
+
+static void on_folder_content_changed(FmFolder* folder, FmTabPage* page)
+{
+    update_status_text_normal(page);
+}
+
 static FmJobErrorAction on_folder_error(FmFolder* folder, GError* err, FmJobErrorSeverity severity, FmTabPage* page)
 {
     GtkWindow* win = GTK_WINDOW(GET_MAIN_WIN(page));
@@ -334,31 +341,45 @@ static void on_folder_report_status(FmFolder * folder, const char * message, FmT
     update_status_text_normal(page);
 }
 
+static void _folder_view_set_folder(FmTabPage * page, FmFolder * folder)
+{
+    if (fm_folder_view_get_model(page->folder_view))
+    {
+        g_signal_handlers_disconnect_by_func(fm_folder_view_get_model(page->folder_view), on_model_filtering_changed, page);
+    }
+
+    FmFolderModel * model = fm_folder_model_new(NULL, app_config->show_hidden);
+    fm_folder_model_set_sort(model, app_config->sort_by,
+                             (app_config->sort_type == GTK_SORT_ASCENDING) ?
+                                FM_SORT_ASCENDING : FM_SORT_DESCENDING);
+    fm_folder_model_set_folder(model, folder);
+
+    g_signal_connect(model, "filtering-changed", G_CALLBACK(on_model_filtering_changed), page);
+
+    fm_folder_view_set_model(page->folder_view, model);
+
+    g_object_unref(model);
+}
+
 static void on_folder_start_loading(FmFolder* folder, FmTabPage* page)
 {
-    FmFolderView* fv = page->folder_view;
-    /* g_debug("start-loading"); */
+    FmFolderView * folder_view = page->folder_view;
+
     /* FIXME: this should be set on toplevel parent */
     fm_set_busy_cursor(GTK_WIDGET(page));
 
-    if (fm_folder_view_get_model(fv) == NULL || fm_folder_model_get_folder(fm_folder_view_get_model(fv)) != folder)
+    if (fm_folder_view_get_folder(folder_view) != folder)
     {
-        if(fm_folder_is_incremental(folder))
+        if (fm_folder_is_incremental(folder))
         {
             /* create a model for the folder and set it to the view
                it is delayed for non-incremental folders since adding rows into
                model is much faster without handlers connected to its signals */
-            FmFolderModel* model = fm_folder_model_new(NULL, app_config->show_hidden);
-            fm_folder_model_set_sort(model, app_config->sort_by,
-                                     (app_config->sort_type == GTK_SORT_ASCENDING) ?
-                                            FM_SORT_ASCENDING : FM_SORT_DESCENDING);
-            fm_folder_model_set_folder(model, folder);
-            fm_folder_view_set_model(fv, model);
-            g_object_unref(model);
+            _folder_view_set_folder(page, folder);
         }
         else
         {
-            fm_folder_view_disconnect_model_with_delay(fv);
+            fm_folder_view_disconnect_model_with_delay(folder_view);
         }
     }
 
@@ -381,15 +402,9 @@ static void on_folder_finish_loading(FmFolder* folder, FmTabPage* page)
      * with incremental loading (search://) */
     if(fm_folder_view_get_model(fv) == NULL || fm_folder_model_get_folder(fm_folder_view_get_model(fv)) != folder)
     {
-        /* create a model for the folder and set it to the view */
-        FmFolderModel* model = fm_folder_model_new(NULL, app_config->show_hidden);
-        fm_folder_model_set_sort(model, app_config->sort_by,
-                                 (app_config->sort_type == GTK_SORT_ASCENDING) ?
-                                    FM_SORT_ASCENDING : FM_SORT_DESCENDING);
-        fm_folder_model_set_folder(model, folder);
-        fm_folder_view_set_model(fv, model);
-        g_object_unref(model);
+        _folder_view_set_folder(page, folder);
     }
+
     fm_folder_query_filesystem_info(folder); /* FIXME: is this needed? */
 
     if (page->select_path_after_chdir)
@@ -445,29 +460,36 @@ static void on_folder_fs_info(FmFolder* folder, FmTabPage* page)
                   (guint)FM_STATUS_TEXT_FS_INFO, msg);
 }
 
+/*****************************************************************************/
+
 static char* format_status_text(FmTabPage* page)
 {
-    FmFolderModel* model = fm_folder_view_get_model(page->folder_view);
-    FmFolder* folder = fm_folder_view_get_folder(page->folder_view);
+    FmFolderModel * model = fm_folder_view_get_model(page->folder_view);
+    FmFolder * folder = fm_folder_view_get_folder(page->folder_view);
 
     if (model && folder && folder == page->folder)
     {
-        FmFileInfoList* files = fm_folder_get_files(folder);
-        GString* msg = g_string_sized_new(128);
-        int total_files = fm_file_info_list_get_length(files);
-        int shown_files = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), NULL);
-        int hidden_files = total_files - shown_files;
-        const char* visible_fmt = ngettext("%d item", "%d items", shown_files);
-        const char* hidden_fmt = ngettext(" (%d hidden)", " (%d hidden)", hidden_files);
+        int visible_files = fm_folder_model_get_n_visible_items(model);
+        int hidden_files = fm_folder_model_get_n_hidden_items(model);
+        int incoming_files = fm_folder_model_get_n_incoming_items(model);
+
+        const char * visible_fmt = ngettext("%d item", "%d items", visible_files);
+        const char * hidden_fmt = ngettext(", %d hidden", ", %d hidden", hidden_files);
+        const char * incoming_fmt = ngettext(", %d being processed", ", %d being processed", incoming_files);
+
+        GString * msg = g_string_sized_new(128);
 
         if (page->loading && fm_folder_is_incremental(folder))
         {
-            g_string_append(msg, _("Loading... "));
+            g_string_append(msg, _("[Loading...] "));
         }
 
-        g_string_append_printf(msg, visible_fmt, shown_files);
-        if(hidden_files > 0)
+        g_string_append_printf(msg, visible_fmt, visible_files);
+        if (hidden_files > 0)
             g_string_append_printf(msg, hidden_fmt, hidden_files);
+        if (incoming_files > 0)
+            g_string_append_printf(msg, incoming_fmt, incoming_files);
+
         return g_string_free(msg, FALSE);
     }
 
@@ -493,6 +515,8 @@ static void update_status_text_normal(FmTabPage * page)
                   (guint)FM_STATUS_TEXT_NORMAL,
                   page->status_text[FM_STATUS_TEXT_NORMAL]);
 }
+
+/*****************************************************************************/
 
 static void on_open_in_new_tab(GtkAction* act, FmMainWin* win)
 {
