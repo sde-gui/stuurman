@@ -441,12 +441,14 @@ static void on_folder_removed(FmFolder* folder, FmTabPage* page)
 
 static void on_folder_fs_info(FmFolder* folder, FmTabPage* page)
 {
-    guint64 free, total;
-    char* msg = page->status_text[FM_STATUS_TEXT_FS_INFO];
+    char * msg = page->status_text[FM_STATUS_TEXT_FS_INFO];
     g_free(msg);
-    /* g_debug("%p, fs-info: %d", folder, (int)folder->has_fs_info); */
+
+    guint64 free, total;
     if(fm_folder_get_filesystem_info(folder, &total, &free))
     {
+        page->volume_free_space_fraction = (double) free / (double) total;
+        page->volume_free_space_fraction = MIN(page->volume_free_space_fraction, 100);
         char total_str[ 64 ];
         char free_str[ 64 ];
         fm_file_size_to_str(free_str, sizeof(free_str), free, fm_config->si_unit);
@@ -454,7 +456,10 @@ static void on_folder_fs_info(FmFolder* folder, FmTabPage* page)
         msg = g_strdup_printf(_("Free space: %s (Total: %s)"), free_str, total_str );
     }
     else
+    {
         msg = NULL;
+    }
+
     page->status_text[FM_STATUS_TEXT_FS_INFO] = msg;
     g_signal_emit(page, signals[STATUS], 0,
                   (guint)FM_STATUS_TEXT_FS_INFO, msg);
@@ -514,6 +519,11 @@ static void update_status_text_normal(FmTabPage * page)
     g_signal_emit(page, signals[STATUS], 0,
                   (guint)FM_STATUS_TEXT_NORMAL,
                   page->status_text[FM_STATUS_TEXT_NORMAL]);
+}
+
+double fm_tab_page_volume_free_space_fraction(FmTabPage* page)
+{
+    return page->volume_free_space_fraction;
 }
 
 /*****************************************************************************/

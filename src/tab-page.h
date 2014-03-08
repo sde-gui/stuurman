@@ -56,7 +56,10 @@ struct _FmTabPage
     FmFolderView* folder_view;
     FmTabLabel* tab_label;
     FmNavHistory* nav_history;
+
     char* status_text[FM_STATUS_TEXT_NUM];
+    double volume_free_space_fraction;
+
     FmFolder* folder;
 
     gboolean loading;
@@ -109,8 +112,8 @@ void fm_tab_page_history(FmTabPage* page, GList* history_item_link);
 /* get window title of this page */
 const char* fm_tab_page_get_title(FmTabPage* page);
 
-/* get normal status text */
 const char* fm_tab_page_get_status_text(FmTabPage* page, FmStatusTextType type);
+double fm_tab_page_volume_free_space_fraction(FmTabPage* page);
 
 G_END_DECLS
 

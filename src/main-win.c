@@ -3,6 +3,7 @@
  *
  *      Copyright 2009 - 2012 Hong Jen Yee (PCMan) <pcman.tw@gmail.com>
  *      Copyright 2012 Andriy Grytsenko (LStranger) <andrej@rep.kiev.ua>
+ *      Copyright 2013 - 2014 Vadim Ushakov <igeekless@gmail.com>
  *
  *      This program is free software; you can redistribute it and/or modify
  *      it under the terms of the GNU General Public License as published by
@@ -52,8 +53,6 @@ static void fm_main_win_finalize(GObject *object);
 G_DEFINE_TYPE(FmMainWin, fm_main_win, GTK_TYPE_WINDOW);
 
 static gint fm_main_win_new_tab(FmMainWin* win, FmPath* path);
-
-static void update_statusbar(FmMainWin* win);
 
 static gboolean on_focus_in(GtkWidget* w, GdkEventFocus* evt);
 static gboolean on_key_press_event(GtkWidget* w, GdkEventKey* evt);
@@ -116,17 +115,17 @@ static GtkDialog* about_dlg = NULL;
 static GtkWidget* key_nav_list_dlg = NULL;
 
 
-
+#include "main-window-statusbar.c"
 
 /****************************************************************************/
 
 /* Managing visibility of toolbar/statusbar/menubar. */
 
-#define layout_XXX_set_visibility(name) \
+#define layout_XXX_set_visibility(name, widget) \
 static void layout_##name##_set_visibility(FmMainWin * win, gboolean value)\
 {\
-    g_return_if_fail(win && win->name);\
-    gtk_widget_set_visible(GTK_WIDGET(win->name), value);\
+    g_return_if_fail(win && win->widget);\
+    gtk_widget_set_visible(GTK_WIDGET(win->widget), value);\
     if (app_config->name##_visible != value)\
     {\
         app_config->name##_visible = value;\
@@ -139,9 +138,9 @@ static void on_show_##name(GtkToggleAction * action, FmMainWin * win)\
     layout_##name##_set_visibility(win, gtk_toggle_action_get_active(action));\
 }\
 
-layout_XXX_set_visibility(menubar)
-layout_XXX_set_visibility(toolbar)
-layout_XXX_set_visibility(statusbar)
+layout_XXX_set_visibility(menubar, menubar)
+layout_XXX_set_visibility(toolbar, toolbar)
+layout_XXX_set_visibility(statusbar, statusbar.statusbar)
 
 void layout_visibility_initialize(FmMainWin* win)
 {
@@ -610,15 +609,6 @@ static void fm_main_win_init(FmMainWin *win)
     GtkActionGroup* action_group;
     GtkAction* act;
     GtkAccelGroup* accel_grp;
-    GtkShadowType shadow_type;
-
-
-    gtk_rc_parse_string(
-        "style \"stuurman-statusbar\" {\n"
-        "  GtkStatusbar::shadow-type = GTK_SHADOW_NONE\n"
-        "}\n"
-        "class \"GtkStatusbar\" style:application \"stuurman-statusbar\"\n"
-    );
 
     pcmanfm_ref();
 
@@ -737,20 +727,8 @@ static void fm_main_win_init(FmMainWin *win)
 
     gtk_box_pack_start(vbox, GTK_WIDGET(win->notebook), TRUE, TRUE, 0);
 
-    /* status bar */
-    win->statusbar = (GtkStatusbar*)gtk_statusbar_new();
-
-    /* status bar column showing volume free space */
-    //gtk_widget_style_get(GTK_WIDGET(win->statusbar), "shadow-type", &shadow_type, NULL);
-    shadow_type = GTK_SHADOW_NONE;
-    win->vol_status = (GtkFrame*)gtk_frame_new(NULL);
-    gtk_frame_set_shadow_type(win->vol_status, shadow_type);
-    gtk_box_pack_start(GTK_BOX(win->statusbar), GTK_WIDGET(win->vol_status), FALSE, TRUE, 0);
-    gtk_container_add(GTK_CONTAINER(win->vol_status), gtk_label_new(NULL));
-
-    gtk_box_pack_start( vbox, GTK_WIDGET(win->statusbar), FALSE, TRUE, 0 );
-    win->statusbar_ctx = gtk_statusbar_get_context_id(win->statusbar, "status");
-    win->statusbar_ctx2 = gtk_statusbar_get_context_id(win->statusbar, "status2");
+    fm_main_win_inititialize_statusbar(win);
+    gtk_box_pack_start( vbox, GTK_WIDGET(win->statusbar.statusbar), FALSE, TRUE, 0 );
 
     win->ui = ui;
 
@@ -758,10 +736,10 @@ static void fm_main_win_init(FmMainWin *win)
 
     update_overall_nav_history_menu(win);
 
-    gtk_widget_show_all(GTK_WIDGET(vbox));
+    gtk_widget_show(GTK_WIDGET(vbox));
     gtk_widget_show_all(GTK_WIDGET(win->menubar));
     gtk_widget_show_all(GTK_WIDGET(win->toolbar));
-    gtk_widget_show_all(GTK_WIDGET(win->statusbar));
+    gtk_widget_show_all(GTK_WIDGET(win->notebook));
 
     layout_visibility_initialize(win);
 
@@ -796,6 +774,8 @@ static void fm_main_win_destroy(GtkObject *object)
     if (win->win_group)
     {
         layout_visibility_finalize(win);
+
+        fm_main_win_destroy_statusbar(win);
 
         g_signal_handlers_disconnect_by_func(win->location, on_location_activate, win);
         g_signal_handlers_disconnect_by_func(win->notebook, on_notebook_switch_page, win);
@@ -1238,30 +1218,6 @@ static gboolean on_tab_label_button_pressed(GtkWidget* tab_label, GdkEventButton
     return FALSE;
 }
 
-static void update_statusbar(FmMainWin* win)
-{
-    FmTabPage* page = win->current_page;
-    const char* text;
-    gtk_statusbar_pop(win->statusbar, win->statusbar_ctx);
-    text = fm_tab_page_get_status_text(page, FM_STATUS_TEXT_NORMAL);
-    if(text)
-        gtk_statusbar_push(win->statusbar, win->statusbar_ctx, text);
-
-    text = fm_tab_page_get_status_text(page, FM_STATUS_TEXT_SELECTED_FILES);
-    if(text)
-        gtk_statusbar_push(win->statusbar, win->statusbar_ctx2, text);
-
-    text = fm_tab_page_get_status_text(page, FM_STATUS_TEXT_FS_INFO);
-    if(text)
-    {
-        GtkLabel* label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(win->vol_status)));
-        gtk_label_set_text(label, text);
-        gtk_widget_show(GTK_WIDGET(win->vol_status));
-    }
-    else
-        gtk_widget_hide(GTK_WIDGET(win->vol_status));
-}
-
 static gint fm_main_win_new_tab(FmMainWin* win, FmPath* path)
 {
     FmTabPage* page = fm_tab_page_new(path);
@@ -1391,37 +1347,6 @@ static void on_folder_view_clicked(FmFolderView* fv, FmFolderViewClickType type,
             fm_main_win_add_tab(win, fm_file_info_get_path(fi));
         break;
     case FM_FV_CLICK_NONE: ;
-    }
-}
-
-/* This callback is only connected to current active tab page. */
-static void on_tab_page_status_text(FmTabPage* page, guint type, const char* status_text, FmMainWin* win)
-{
-    if(page != win->current_page)
-        return;
-
-    switch(type)
-    {
-    case FM_STATUS_TEXT_NORMAL:
-        gtk_statusbar_pop(win->statusbar, win->statusbar_ctx);
-        if(status_text)
-            gtk_statusbar_push(win->statusbar, win->statusbar_ctx, status_text);
-        break;
-    case FM_STATUS_TEXT_SELECTED_FILES:
-        gtk_statusbar_pop(win->statusbar, win->statusbar_ctx2);
-        if(status_text)
-            gtk_statusbar_push(win->statusbar, win->statusbar_ctx2, status_text);
-        break;
-    case FM_STATUS_TEXT_FS_INFO:
-        if(status_text)
-        {
-            GtkLabel* label = GTK_LABEL(gtk_bin_get_child(GTK_BIN(win->vol_status)));
-            gtk_label_set_text(label, status_text);
-            gtk_widget_show(GTK_WIDGET(win->vol_status));
-        }
-        else
-            gtk_widget_hide(GTK_WIDGET(win->vol_status));
-        break;
     }
 }
 

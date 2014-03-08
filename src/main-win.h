@@ -57,8 +57,18 @@ struct _FmMainWin
     FmTabPage* current_page;
     FmSidePane* side_pane;
     FmFolderView* folder_view;
-    GtkStatusbar* statusbar;
-    GtkFrame* vol_status;
+
+    struct {
+        GtkStatusbar * statusbar;
+        GtkWidget * volume_frame;
+        GtkWidget * volume_label;
+        GtkWidget * volume_progress_bar;
+        GtkWidget * icon_scale;
+        guint ctx;
+        guint ctx2;
+    } statusbar;
+
+
     GtkMenuShell* bookmarks_menu;
     GtkWidget* history_menu;
     GtkMenuItem* file_menu_item;
@@ -66,8 +76,6 @@ struct _FmMainWin
     /* <private> */
     FmNavHistory* nav_history;
     GtkWidget* overall_nav_history_menu;
-    guint statusbar_ctx;
-    guint statusbar_ctx2;
     FmBookmarks* bookmarks;
     guint idle_handler; /* fix for GtkEntry bug */
     gboolean fullscreen;

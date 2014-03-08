@@ -74,6 +74,8 @@ static void fm_app_config_init(FmAppConfig *cfg)
     cfg->toolbar_visible = TRUE;
     cfg->statusbar_visible = TRUE;
 
+    cfg->show_space_information = TRUE;
+
     cfg->win_width = 640;
     cfg->win_height = 480;
     cfg->splitter_pos = 150;
@@ -115,6 +117,8 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
     fm_key_file_get_bool(kf, "layout", "statusbar_visible", &cfg->statusbar_visible);
 
     /* ui */
+    fm_key_file_get_bool(kf, "ui", "show_space_information", &cfg->show_space_information);
+    fm_key_file_get_bool(kf, "ui", "show_space_information_in_bar", &cfg->show_space_information_in_bar);
     fm_key_file_get_bool(kf, "ui", "use_tearoffs", &cfg->use_tearoffs);
     fm_key_file_get_bool(kf, "ui", "full_path_in_title", &cfg->full_path_in_title);
     fm_key_file_get_int(kf, "ui", "always_show_tabs", &cfg->always_show_tabs);
@@ -213,6 +217,8 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append_printf(buf, "statusbar_visible=%d\n", cfg->statusbar_visible);
 
         g_string_append(buf, "\n[ui]\n");
+        g_string_append_printf(buf, "show_space_information=%d\n", cfg->show_space_information);
+        g_string_append_printf(buf, "show_space_information_in_bar=%d\n", cfg->show_space_information_in_bar);
         g_string_append_printf(buf, "use_tearoffs=%d\n", cfg->use_tearoffs);
         g_string_append_printf(buf, "full_path_in_title=%d\n", cfg->full_path_in_title);
         g_string_append_printf(buf, "always_show_tabs=%d\n", cfg->always_show_tabs);
