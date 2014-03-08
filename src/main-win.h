@@ -59,6 +59,7 @@ struct _FmMainWin
     FmFolderView* folder_view;
 
     struct {
+        GtkWidget * event_box;
         GtkStatusbar * statusbar;
         GtkWidget * volume_frame;
         GtkWidget * volume_label;
@@ -66,6 +67,8 @@ struct _FmMainWin
         GtkWidget * icon_scale;
         guint ctx;
         guint ctx2;
+        guint show_space_information_handler;
+        guint show_space_information_in_progress_bar_handler;
     } statusbar;
 
 

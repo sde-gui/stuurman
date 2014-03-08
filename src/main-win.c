@@ -114,8 +114,34 @@ static GSList* all_wins = NULL;
 static GtkDialog* about_dlg = NULL;
 static GtkWidget* key_nav_list_dlg = NULL;
 
+static void do_popup_menu(GtkWidget * widget, GtkWidget * menu, GdkEventButton * event);
+
+/****************************************************************************/
 
 #include "main-window-statusbar.c"
+
+/****************************************************************************/
+
+static void
+do_popup_menu(GtkWidget * widget, GtkWidget * menu, GdkEventButton * event)
+{
+    int button, event_time;
+    if (event)
+    {
+        button = event->button;
+        event_time = event->time;
+    }
+    else
+    {
+        button = 0;
+        event_time = gtk_get_current_event_time ();
+    }
+
+    if (gtk_menu_get_attach_widget(GTK_MENU(menu)) == NULL)
+        gtk_menu_attach_to_widget(GTK_MENU(menu), widget, NULL);
+
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, button, event_time);
+}
 
 /****************************************************************************/
 
@@ -140,7 +166,7 @@ static void on_show_##name(GtkToggleAction * action, FmMainWin * win)\
 
 layout_XXX_set_visibility(menubar, menubar)
 layout_XXX_set_visibility(toolbar, toolbar)
-layout_XXX_set_visibility(statusbar, statusbar.statusbar)
+layout_XXX_set_visibility(statusbar, statusbar.event_box)
 
 void layout_visibility_initialize(FmMainWin* win)
 {
@@ -728,7 +754,7 @@ static void fm_main_win_init(FmMainWin *win)
     gtk_box_pack_start(vbox, GTK_WIDGET(win->notebook), TRUE, TRUE, 0);
 
     fm_main_win_inititialize_statusbar(win);
-    gtk_box_pack_start( vbox, GTK_WIDGET(win->statusbar.statusbar), FALSE, TRUE, 0 );
+    gtk_box_pack_start( vbox, GTK_WIDGET(win->statusbar.event_box), FALSE, TRUE, 0 );
 
     win->ui = ui;
 

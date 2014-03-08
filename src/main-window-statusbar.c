@@ -21,6 +21,41 @@
  *      MA 02110-1301, USA.
  */
 
+static void update_statusbar(FmMainWin * win);
+
+static gboolean on_statusbar_event_box_button_press_event(GtkWidget * widget, GdkEventButton * event, FmMainWin * win)
+{
+    if (event->button == 3 && event->type == GDK_BUTTON_PRESS)
+    {
+        do_popup_menu(widget, gtk_ui_manager_get_widget(win->ui, "/statusbar_popup"), event);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static gboolean on_statusbar_event_box_popup_menu_handler(GtkWidget * widget, FmMainWin * win)
+{
+    do_popup_menu(widget, gtk_ui_manager_get_widget(win->ui, "/statusbar_popup"), NULL);
+    return TRUE;
+}
+
+static void on_changed_show_space_information(FmConfig * config, FmMainWin * win)
+{
+    gtk_toggle_action_set_active(
+        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformation")),
+        app_config->show_space_information);
+    update_statusbar(win);
+}
+
+static void on_changed_show_space_information_in_progress_bar(FmConfig * config, FmMainWin * win)
+{
+    gtk_toggle_action_set_active(
+        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformationInProgressBar")),
+        app_config->show_space_information_in_progress_bar);
+    update_statusbar(win);
+}
+
 static void fm_main_win_inititialize_statusbar(FmMainWin *win)
 {
     gtk_rc_parse_string(
@@ -30,7 +65,10 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
         "class \"GtkStatusbar\" style:application \"stuurman-statusbar\"\n"
     );
 
+    win->statusbar.event_box = gtk_event_box_new();
+
     win->statusbar.statusbar = (GtkStatusbar *) gtk_statusbar_new();
+    gtk_container_add(GTK_CONTAINER(win->statusbar.event_box), (GtkWidget *) win->statusbar.statusbar);
 
     //gtk_widget_style_get(GTK_WIDGET(win->statusbar), "shadow-type", &shadow_type, NULL);
 /*
@@ -62,11 +100,44 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
     win->statusbar.ctx = gtk_statusbar_get_context_id(win->statusbar.statusbar, "status");
     win->statusbar.ctx2 = gtk_statusbar_get_context_id(win->statusbar.statusbar, "status2");
 
+    gtk_widget_show((GtkWidget *) win->statusbar.event_box);
     gtk_widget_show((GtkWidget *) win->statusbar.statusbar);
+
+    g_signal_connect(win->statusbar.event_box, "button-press-event", G_CALLBACK(on_statusbar_event_box_button_press_event), win);
+    g_signal_connect(win->statusbar.event_box, "popup-menu", G_CALLBACK(on_statusbar_event_box_popup_menu_handler), win);
+
+    win->statusbar.show_space_information_handler =
+        g_signal_connect(fm_config, "changed::show_space_information", G_CALLBACK(on_changed_show_space_information), win);
+
+    win->statusbar.show_space_information_in_progress_bar_handler =
+        g_signal_connect(fm_config, "changed::show_space_information_in_progress_bar", G_CALLBACK(on_changed_show_space_information_in_progress_bar), win);
+
+    gtk_toggle_action_set_active(
+        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformation")),
+        app_config->show_space_information);
+    gtk_toggle_action_set_active(
+        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformationInProgressBar")),
+        app_config->show_space_information_in_progress_bar);
 }
 
 static void fm_main_win_destroy_statusbar(FmMainWin * win)
 {
+    g_signal_handlers_disconnect_by_func(win->statusbar.event_box, on_statusbar_event_box_button_press_event, win);
+    g_signal_handlers_disconnect_by_func(win->statusbar.event_box, on_statusbar_event_box_popup_menu_handler, win);
+
+    if (win->statusbar.show_space_information_handler)
+    {
+        g_signal_handler_disconnect(fm_config, win->statusbar.show_space_information_handler);
+        win->statusbar.show_space_information_handler = 0;
+    }
+
+    if (win->statusbar.show_space_information_in_progress_bar_handler)
+    {
+        g_signal_handler_disconnect(fm_config, win->statusbar.show_space_information_in_progress_bar_handler);
+        win->statusbar.show_space_information_in_progress_bar_handler = 0;
+    }
+
+    win->statusbar.event_box = NULL;
     win->statusbar.statusbar = NULL;
     win->statusbar.volume_frame = NULL;
     win->statusbar.volume_label = NULL;
@@ -99,7 +170,7 @@ static void update_status(FmMainWin * win, guint type, const char*  status_text)
         {
             if (status_text && app_config->show_space_information)
             {
-                if (app_config->show_space_information_in_bar)
+                if (app_config->show_space_information_in_progress_bar)
                 {
                     gtk_progress_bar_set_text(GTK_PROGRESS_BAR(win->statusbar.volume_progress_bar), status_text);
                     gtk_progress_bar_set_fraction(
@@ -109,7 +180,7 @@ static void update_status(FmMainWin * win, guint type, const char*  status_text)
                     if (!gtk_widget_get_visible(win->statusbar.volume_progress_bar))
                     {
                         GtkRequisition requisition;
-                        gtk_widget_size_request(win->statusbar.statusbar, &requisition);
+                        gtk_widget_size_request(GTK_WIDGET(win->statusbar.statusbar), &requisition);
                         gtk_widget_set_size_request(win->statusbar.volume_progress_bar, -1, requisition.height);
                     }
 
@@ -120,6 +191,7 @@ static void update_status(FmMainWin * win, guint type, const char*  status_text)
                 {
                     gtk_label_set_text((GtkLabel *) win->statusbar.volume_label, status_text);
                     gtk_widget_show(win->statusbar.volume_frame);
+                    gtk_widget_show(win->statusbar.volume_label);
                     gtk_widget_hide(win->statusbar.volume_progress_bar);
                 }
             }
@@ -163,4 +235,24 @@ static void on_tab_page_status_text(FmTabPage* page, guint type, const char* sta
     if (page != win->current_page)
         return;
     update_status(win, type, status_text);
+}
+
+static void on_show_space_information(GtkToggleAction * action, FmMainWin * win)
+{
+    gboolean active = gtk_toggle_action_get_active(action);
+    if (app_config->show_space_information != active)
+    {
+        app_config->show_space_information = active;
+        fm_config_emit_changed(fm_config, "show_space_information");
+    }
+}
+
+static void on_show_space_information_in_progress_bar(GtkToggleAction * action, FmMainWin * win)
+{
+    gboolean active = gtk_toggle_action_get_active(action);
+    if (app_config->show_space_information_in_progress_bar != active)
+    {
+        app_config->show_space_information_in_progress_bar = active;
+        fm_config_emit_changed(fm_config, "show_space_information_in_progress_bar");
+    }
 }

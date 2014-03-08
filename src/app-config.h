@@ -79,7 +79,7 @@ struct _FmAppConfig
 
     /* ui */
     gboolean show_space_information;
-    gboolean show_space_information_in_bar;
+    gboolean show_space_information_in_progress_bar;
     gboolean use_tearoffs;
     gboolean full_path_in_title;
     gboolean always_show_tabs;
