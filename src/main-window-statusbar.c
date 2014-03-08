@@ -45,6 +45,9 @@ static void on_changed_show_space_information(FmConfig * config, FmMainWin * win
     gtk_toggle_action_set_active(
         GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformation")),
         app_config->show_space_information);
+    gtk_action_set_sensitive(
+        gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformationInProgressBar"),
+        app_config->show_space_information);
     update_statusbar(win);
 }
 
@@ -112,12 +115,8 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
     win->statusbar.show_space_information_in_progress_bar_handler =
         g_signal_connect(fm_config, "changed::show_space_information_in_progress_bar", G_CALLBACK(on_changed_show_space_information_in_progress_bar), win);
 
-    gtk_toggle_action_set_active(
-        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformation")),
-        app_config->show_space_information);
-    gtk_toggle_action_set_active(
-        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowSpaceInformationInProgressBar")),
-        app_config->show_space_information_in_progress_bar);
+    on_changed_show_space_information(NULL, win);
+    on_changed_show_space_information_in_progress_bar(NULL, win);
 }
 
 static void fm_main_win_destroy_statusbar(FmMainWin * win)
