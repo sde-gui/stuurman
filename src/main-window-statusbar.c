@@ -21,7 +21,101 @@
  *      MA 02110-1301, USA.
  */
 
+/*****************************************************************************/
+
 static void update_statusbar(FmMainWin * win);
+
+/*****************************************************************************/
+
+static void on_statusbar_icon_scale_value_changed_handler(GtkRange * widget, FmMainWin * win)
+{
+    if (!win->folder_view)
+        return;
+    FmStandardView * view = FM_STANDARD_VIEW(win->folder_view);
+    if (!view)
+        return;
+
+    int value = gtk_range_get_value(widget);
+
+    {
+        char * tooltip = g_strdup_printf(
+            ngettext("Icon Size: %d pixel", "Icon Size: %d pixels", value),
+            value);
+        gtk_widget_set_tooltip_text(GTK_WIDGET(widget), tooltip);
+        g_free(tooltip);
+    }
+
+    FmStandardViewModeSettings mode_settings = fm_standard_view_get_mode_settings(view);
+
+    if (mode_settings.icon_size == value)
+        return;
+
+    gint * p = NULL;
+    char * s = NULL;
+    if (g_strcmp0(mode_settings.icon_size_id, "small_icon") == 0)
+    {
+        p = &fm_config->small_icon_size;
+        s = "small_icon_size";
+    }
+    else if (g_strcmp0(mode_settings.icon_size_id, "big_icon") == 0)
+    {
+        p = &fm_config->big_icon_size;
+        s = "big_icon_size";
+    }
+    else if (g_strcmp0(mode_settings.icon_size_id, "thumbnail") == 0)
+    {
+        p = &fm_config->thumbnail_size;
+        s = "thumbnail_size";
+    }
+
+    if (p && *p != value)
+    {
+        *p = value;
+        fm_config_emit_changed(fm_config, s);
+    }
+}
+
+static void update_statusbar_icon_scale(FmMainWin * win)
+{
+    if (!win->folder_view)
+        goto hide;
+
+    FmStandardView * view = FM_STANDARD_VIEW(win->folder_view);
+    if (!view)
+        goto hide;
+
+    FmStandardViewModeSettings mode_settings = fm_standard_view_get_mode_settings(view);
+
+    gint value = -1;
+
+    if (g_strcmp0(mode_settings.icon_size_id, "small_icon") == 0)
+        value = fm_config->small_icon_size;
+    else if (g_strcmp0(mode_settings.icon_size_id, "big_icon") == 0)
+        value = fm_config->big_icon_size;
+    else if (g_strcmp0(mode_settings.icon_size_id, "thumbnail") == 0)
+        value = fm_config->thumbnail_size;
+
+    if (value < 0)
+        goto hide;
+
+    if (gtk_range_get_value(GTK_RANGE(win->statusbar.icon_scale)) != value)
+    {
+        gtk_range_set_value(GTK_RANGE(win->statusbar.icon_scale), value);
+    }
+
+    gtk_widget_show(win->statusbar.icon_scale);
+    return;
+
+hide:
+    gtk_widget_hide(win->statusbar.icon_scale);
+}
+
+static void on_changed_icon_size(FmConfig * config, FmMainWin * win)
+{
+    update_statusbar_icon_scale(win);
+}
+
+/*****************************************************************************/
 
 static gboolean on_statusbar_event_box_button_press_event(GtkWidget * widget, GdkEventButton * event, FmMainWin * win)
 {
@@ -59,6 +153,8 @@ static void on_changed_show_space_information_in_progress_bar(FmConfig * config,
     update_statusbar(win);
 }
 
+/*****************************************************************************/
+
 static void fm_main_win_inititialize_statusbar(FmMainWin *win)
 {
     gtk_rc_parse_string(
@@ -74,7 +170,7 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
     gtk_container_add(GTK_CONTAINER(win->statusbar.event_box), (GtkWidget *) win->statusbar.statusbar);
 
     //gtk_widget_style_get(GTK_WIDGET(win->statusbar), "shadow-type", &shadow_type, NULL);
-/*
+
     {
         win->statusbar.icon_scale = gtk_hscale_new_with_range(0, 256, 4);
         gtk_scale_set_draw_value((GtkScale *) win->statusbar.icon_scale, FALSE);
@@ -85,7 +181,7 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
         );
         gtk_box_pack_end(GTK_BOX(win->statusbar.statusbar), win->statusbar.icon_scale, FALSE, TRUE, 0);
     }
-*/
+
     {
         win->statusbar.volume_progress_bar = gtk_progress_bar_new();
         gtk_box_pack_end(GTK_BOX(win->statusbar.statusbar), win->statusbar.volume_progress_bar, FALSE, TRUE, 0);
@@ -103,7 +199,7 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
     win->statusbar.ctx = gtk_statusbar_get_context_id(win->statusbar.statusbar, "status");
     win->statusbar.ctx2 = gtk_statusbar_get_context_id(win->statusbar.statusbar, "status2");
 
-    gtk_widget_show((GtkWidget *) win->statusbar.event_box);
+    gtk_widget_show(win->statusbar.event_box);
     gtk_widget_show((GtkWidget *) win->statusbar.statusbar);
 
     g_signal_connect(win->statusbar.event_box, "button-press-event", G_CALLBACK(on_statusbar_event_box_button_press_event), win);
@@ -115,14 +211,25 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
     win->statusbar.show_space_information_in_progress_bar_handler =
         g_signal_connect(fm_config, "changed::show_space_information_in_progress_bar", G_CALLBACK(on_changed_show_space_information_in_progress_bar), win);
 
+    win->statusbar.small_icon_size_handler =
+        g_signal_connect(fm_config, "changed::small_icon_size", G_CALLBACK(on_changed_icon_size), win);
+    win->statusbar.big_icon_size_handler =
+        g_signal_connect(fm_config, "changed::big_icon_size", G_CALLBACK(on_changed_icon_size), win);
+    win->statusbar.thumbnail_size_handler =
+        g_signal_connect(fm_config, "changed::thumbnail_size", G_CALLBACK(on_changed_icon_size), win);
+
     on_changed_show_space_information(NULL, win);
     on_changed_show_space_information_in_progress_bar(NULL, win);
+
+    g_signal_connect(win->statusbar.icon_scale, "value-changed", G_CALLBACK(on_statusbar_icon_scale_value_changed_handler), win);
 }
 
 static void fm_main_win_destroy_statusbar(FmMainWin * win)
 {
     g_signal_handlers_disconnect_by_func(win->statusbar.event_box, on_statusbar_event_box_button_press_event, win);
     g_signal_handlers_disconnect_by_func(win->statusbar.event_box, on_statusbar_event_box_popup_menu_handler, win);
+
+    g_signal_handlers_disconnect_by_func(win->statusbar.icon_scale, on_statusbar_icon_scale_value_changed_handler, win);
 
     if (win->statusbar.show_space_information_handler)
     {
@@ -136,6 +243,24 @@ static void fm_main_win_destroy_statusbar(FmMainWin * win)
         win->statusbar.show_space_information_in_progress_bar_handler = 0;
     }
 
+    if (win->statusbar.small_icon_size_handler)
+    {
+        g_signal_handler_disconnect(fm_config, win->statusbar.small_icon_size_handler);
+        win->statusbar.small_icon_size_handler = 0;
+    }
+
+    if (win->statusbar.big_icon_size_handler)
+    {
+        g_signal_handler_disconnect(fm_config, win->statusbar.big_icon_size_handler);
+        win->statusbar.big_icon_size_handler = 0;
+    }
+
+    if (win->statusbar.thumbnail_size_handler)
+    {
+        g_signal_handler_disconnect(fm_config, win->statusbar.thumbnail_size_handler);
+        win->statusbar.thumbnail_size_handler = 0;
+    }
+
     win->statusbar.event_box = NULL;
     win->statusbar.statusbar = NULL;
     win->statusbar.volume_frame = NULL;
@@ -143,6 +268,8 @@ static void fm_main_win_destroy_statusbar(FmMainWin * win)
     win->statusbar.volume_progress_bar = NULL;
     win->statusbar.icon_scale = NULL;
 }
+
+/*****************************************************************************/
 
 static void update_status(FmMainWin * win, guint type, const char*  status_text)
 {
@@ -226,15 +353,18 @@ static void update_statusbar(FmMainWin * win)
 
     status_text = fm_tab_page_get_status_text(page, FM_STATUS_TEXT_FS_INFO);
     update_status(win, FM_STATUS_TEXT_FS_INFO, status_text);
+
+    update_statusbar_icon_scale(win);
 }
 
-/* This callback is only connected to current active tab page. */
 static void on_tab_page_status_text(FmTabPage* page, guint type, const char* status_text, FmMainWin* win)
 {
     if (page != win->current_page)
         return;
     update_status(win, type, status_text);
 }
+
+/*****************************************************************************/
 
 static void on_show_space_information(GtkToggleAction * action, FmMainWin * win)
 {

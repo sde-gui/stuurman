@@ -69,6 +69,9 @@ struct _FmMainWin
         guint ctx2;
         guint show_space_information_handler;
         guint show_space_information_in_progress_bar_handler;
+        guint small_icon_size_handler;
+        guint big_icon_size_handler;
+        guint thumbnail_size_handler;
     } statusbar;
 
 

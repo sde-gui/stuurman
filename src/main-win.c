@@ -1033,6 +1033,7 @@ static void on_change_mode(GtkRadioAction* act, GtkRadioAction *cur, FmMainWin* 
 {
     int mode = gtk_radio_action_get_current_value(cur);
     fm_standard_view_set_mode(FM_STANDARD_VIEW(win->folder_view), mode);
+    update_statusbar_icon_scale(win);
 }
 
 static void change_sort(FmMainWin* win, int type, int by)
