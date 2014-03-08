@@ -105,6 +105,14 @@ static void update_status(FmMainWin * win, guint type, const char*  status_text)
                     gtk_progress_bar_set_fraction(
                         GTK_PROGRESS_BAR(win->statusbar.volume_progress_bar),
                         1 - fm_tab_page_volume_free_space_fraction(win->current_page));
+
+                    if (!gtk_widget_get_visible(win->statusbar.volume_progress_bar))
+                    {
+                        GtkRequisition requisition;
+                        gtk_widget_size_request(win->statusbar.statusbar, &requisition);
+                        gtk_widget_set_size_request(win->statusbar.volume_progress_bar, -1, requisition.height);
+                    }
+
                     gtk_widget_show(win->statusbar.volume_progress_bar);
                     gtk_widget_hide(win->statusbar.volume_frame);
                 }
