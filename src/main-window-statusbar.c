@@ -237,6 +237,7 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
 
     on_changed_show_space_information(NULL, win);
     on_changed_show_space_information_in_progress_bar(NULL, win);
+    on_changed_show_zoom_slider(NULL, win);
 }
 
 static void fm_main_win_destroy_statusbar(FmMainWin * win)
