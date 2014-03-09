@@ -77,6 +77,9 @@ static void on_statusbar_icon_scale_value_changed_handler(GtkRange * widget, FmM
 
 static void update_statusbar_icon_scale(FmMainWin * win)
 {
+    if (!app_config->show_zoom_slider)
+        goto hide;
+
     if (!win->folder_view)
         goto hide;
 
@@ -153,6 +156,15 @@ static void on_changed_show_space_information_in_progress_bar(FmConfig * config,
     update_statusbar(win);
 }
 
+static void on_changed_show_zoom_slider(FmConfig * config, FmMainWin * win)
+{
+    gtk_toggle_action_set_active(
+        GTK_TOGGLE_ACTION(gtk_action_group_get_action(win->action_group, "StatusbarShowZoomSlider")),
+        app_config->show_zoom_slider);
+    update_statusbar_icon_scale(win);
+}
+
+
 /*****************************************************************************/
 
 static void fm_main_win_inititialize_statusbar(FmMainWin *win)
@@ -202,15 +214,20 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
     gtk_widget_show(win->statusbar.event_box);
     gtk_widget_show((GtkWidget *) win->statusbar.statusbar);
 
-    g_signal_connect(win->statusbar.event_box, "button-press-event", G_CALLBACK(on_statusbar_event_box_button_press_event), win);
-    g_signal_connect(win->statusbar.event_box, "popup-menu", G_CALLBACK(on_statusbar_event_box_popup_menu_handler), win);
+    g_signal_connect(win->statusbar.event_box, "button-press-event",
+        G_CALLBACK(on_statusbar_event_box_button_press_event), win);
+    g_signal_connect(win->statusbar.event_box, "popup-menu",
+        G_CALLBACK(on_statusbar_event_box_popup_menu_handler), win);
+
+    g_signal_connect(win->statusbar.icon_scale, "value-changed",
+        G_CALLBACK(on_statusbar_icon_scale_value_changed_handler), win);
 
     win->statusbar.show_space_information_handler =
         g_signal_connect(fm_config, "changed::show_space_information", G_CALLBACK(on_changed_show_space_information), win);
-
     win->statusbar.show_space_information_in_progress_bar_handler =
         g_signal_connect(fm_config, "changed::show_space_information_in_progress_bar", G_CALLBACK(on_changed_show_space_information_in_progress_bar), win);
-
+    win->statusbar.show_zoom_slider_handler =
+        g_signal_connect(fm_config, "changed::show_zoom_slider", G_CALLBACK(on_changed_show_zoom_slider), win);
     win->statusbar.small_icon_size_handler =
         g_signal_connect(fm_config, "changed::small_icon_size", G_CALLBACK(on_changed_icon_size), win);
     win->statusbar.big_icon_size_handler =
@@ -220,8 +237,6 @@ static void fm_main_win_inititialize_statusbar(FmMainWin *win)
 
     on_changed_show_space_information(NULL, win);
     on_changed_show_space_information_in_progress_bar(NULL, win);
-
-    g_signal_connect(win->statusbar.icon_scale, "value-changed", G_CALLBACK(on_statusbar_icon_scale_value_changed_handler), win);
 }
 
 static void fm_main_win_destroy_statusbar(FmMainWin * win)
@@ -241,6 +256,12 @@ static void fm_main_win_destroy_statusbar(FmMainWin * win)
     {
         g_signal_handler_disconnect(fm_config, win->statusbar.show_space_information_in_progress_bar_handler);
         win->statusbar.show_space_information_in_progress_bar_handler = 0;
+    }
+
+    if (win->statusbar.show_zoom_slider_handler)
+    {
+        g_signal_handler_disconnect(fm_config, win->statusbar.show_zoom_slider_handler);
+        win->statusbar.show_zoom_slider_handler = 0;
     }
 
     if (win->statusbar.small_icon_size_handler)
@@ -383,5 +404,15 @@ static void on_show_space_information_in_progress_bar(GtkToggleAction * action, 
     {
         app_config->show_space_information_in_progress_bar = active;
         fm_config_emit_changed(fm_config, "show_space_information_in_progress_bar");
+    }
+}
+
+static void on_show_zoom_slider(GtkToggleAction * action, FmMainWin * win)
+{
+    gboolean active = gtk_toggle_action_get_active(action);
+    if (app_config->show_zoom_slider != active)
+    {
+        app_config->show_zoom_slider = active;
+        fm_config_emit_changed(fm_config, "show_zoom_slider");
     }
 }

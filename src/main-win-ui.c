@@ -132,6 +132,7 @@ static const char main_menu_xml[] =
 "<accelerator action='Next2'/>"
 "<accelerator action='Reload2'/>"
 "<popup name='statusbar_popup'>"
+    "<menuitem action='StatusbarShowZoomSlider'/>"
     "<menuitem action='StatusbarShowSpaceInformation'/>"
     "<menuitem action='StatusbarShowSpaceInformationInProgressBar'/>"
 "</popup>";
@@ -207,6 +208,8 @@ static GtkToggleActionEntry main_win_toggle_actions[]=
     {"TwinPane", NULL, N_("T_win Pane Mode"), "F3", NULL, NULL, TRUE},
     {"Fullscreen", NULL, N_("Fullscreen _Mode"), "F11", NULL, G_CALLBACK(on_fullscreen), FALSE},
 
+    {"StatusbarShowZoomSlider", NULL,
+        N_("Show _Zoom Slider"), NULL, NULL, G_CALLBACK(on_show_zoom_slider), TRUE},
     {"StatusbarShowSpaceInformation", NULL,
         N_("Show Space _Information"), NULL, NULL, G_CALLBACK(on_show_space_information), TRUE},
     {"StatusbarShowSpaceInformationInProgressBar", NULL,

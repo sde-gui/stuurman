@@ -76,6 +76,7 @@ static void fm_app_config_init(FmAppConfig *cfg)
 
     cfg->show_space_information = TRUE;
     cfg->show_space_information_in_progress_bar = TRUE;
+    cfg->show_zoom_slider = TRUE;
 
     cfg->win_width = 640;
     cfg->win_height = 480;
@@ -120,6 +121,7 @@ void fm_app_config_load_from_key_file(FmAppConfig* cfg, GKeyFile* kf)
     /* ui */
     fm_key_file_get_bool(kf, "ui", "show_space_information", &cfg->show_space_information);
     fm_key_file_get_bool(kf, "ui", "show_space_information_in_progress_bar", &cfg->show_space_information_in_progress_bar);
+    fm_key_file_get_bool(kf, "ui", "show_zoom_slider", &cfg->show_zoom_slider);
     fm_key_file_get_bool(kf, "ui", "use_tearoffs", &cfg->use_tearoffs);
     fm_key_file_get_bool(kf, "ui", "full_path_in_title", &cfg->full_path_in_title);
     fm_key_file_get_int(kf, "ui", "always_show_tabs", &cfg->always_show_tabs);
@@ -220,6 +222,7 @@ void fm_app_config_save_profile(FmAppConfig* cfg, const char* name)
         g_string_append(buf, "\n[ui]\n");
         g_string_append_printf(buf, "show_space_information=%d\n", cfg->show_space_information);
         g_string_append_printf(buf, "show_space_information_in_progress_bar=%d\n", cfg->show_space_information_in_progress_bar);
+        g_string_append_printf(buf, "show_zoom_slider=%d\n", cfg->show_zoom_slider);
         g_string_append_printf(buf, "use_tearoffs=%d\n", cfg->use_tearoffs);
         g_string_append_printf(buf, "full_path_in_title=%d\n", cfg->full_path_in_title);
         g_string_append_printf(buf, "always_show_tabs=%d\n", cfg->always_show_tabs);
