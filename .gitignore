@@ -1,6 +1,5 @@
 Makefile
 Makefile.in*
-.[A-Za-z]*
 *~
 *.o
 
