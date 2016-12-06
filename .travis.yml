@@ -1,0 +1,7 @@
+language: c
+compiler:
+  - clang
+  - gcc
+sudo: required
+script: ./travis_script build stuurman
+before_install: ./travis_script before_install stuurman

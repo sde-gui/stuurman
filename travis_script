@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -xe
+
+if [ "x-$TRAVIS" != x-true ] ; then
+    export TRAVIS=true
+    export TRAVIS_BUILD_DIR="`pwd`"
+
+    if [ -d project-dir ] ; then
+        rm -rf project-dir
+    fi
+fi
+
+(
+    mkdir -p project-dir
+    cd project-dir
+    git clone https://github.com/sde-gui/devel-tools.git || true
+
+    devel-tools/sde-travis-ci-build "$@"
+)
