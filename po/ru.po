@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-24 15:22+0700\n"
-"PO-Revision-Date: 2016-03-24 15:32+0700\n"
+"POT-Creation-Date: 2017-01-08 22:37+0700\n"
+"PO-Revision-Date: 2017-01-08 22:38+0700\n"
 "Last-Translator: Vadim Ushakov <igeekless@gmail.com>\n"
 "Language-Team: Russian <>\n"
 "Language: ru\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.8.11\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: ../data/ui/about.glade.in.h:1
@@ -605,7 +605,7 @@ msgid "Show Space _Information"
 msgstr "Показывать информацию о доступном объёме"
 
 #: ../src/main-win-ui.c:216
-msgid "Show Space Information In _ProgressBar"
+msgid "Show Space Information In _Progress Bar"
 msgstr "Показывать информацию о доступном объёме в виде полосы"
 
 #: ../src/main-win-ui.c:221
@@ -763,12 +763,13 @@ msgstr[0] "Выбран %d элемент"
 msgstr[1] "Выбрано %d элемента"
 msgstr[2] "Выбрано %d элементов"
 
-#: ../src/tab-page.c:456
+#. msg = g_strdup_printf(_("Free %s of %s"), free_str, total_str );
+#: ../src/tab-page.c:466
 #, c-format
-msgid "Free %s of %s"
-msgstr "Свободное место: %s из %s."
+msgid "%s total: %s used, %s free"
+msgstr "%s всего: %s занято, %s свободно"
 
-#: ../src/tab-page.c:481
+#: ../src/tab-page.c:491
 #, c-format
 msgid "%d item"
 msgid_plural "%d items"
@@ -776,7 +777,7 @@ msgstr[0] "%d элемент"
 msgstr[1] "%d элемента"
 msgstr[2] "%d элементов"
 
-#: ../src/tab-page.c:482
+#: ../src/tab-page.c:492
 #, c-format
 msgid ", %d hidden"
 msgid_plural ", %d hidden"
@@ -784,7 +785,7 @@ msgstr[0] ", %d скрыто"
 msgstr[1] ", %d скрыто"
 msgstr[2] ", %d скрыто"
 
-#: ../src/tab-page.c:483
+#: ../src/tab-page.c:493
 #, c-format
 msgid ", %d being processed"
 msgid_plural ", %d being processed"
@@ -792,11 +793,11 @@ msgstr[0] ", %d обрабатывается"
 msgstr[1] ", %d обрабатывается"
 msgstr[2] ", %d обрабатывается"
 
-#: ../src/tab-page.c:489
+#: ../src/tab-page.c:499
 msgid "[Loading...] "
 msgstr "[Загрузка...]"
 
-#: ../src/tab-page.c:505
+#: ../src/tab-page.c:515
 #, c-format
 msgid "Loading %s: %s"
 msgstr "Загрузка %s: %s"
@@ -812,6 +813,9 @@ msgstr "Файловый менеджер"
 #: ../data/stuurman.desktop.in.h:3
 msgid "Browse the file system and manage the files"
 msgstr "Просмотр файловой системы и управление файлами"
+
+#~ msgid "Free %s of %s"
+#~ msgstr "Свободное место: %s из %s."
 
 #~ msgid "S_ort Files"
 #~ msgstr "_Сортировать файлы"
