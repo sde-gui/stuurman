@@ -213,7 +213,7 @@ static GtkToggleActionEntry main_win_toggle_actions[]=
     {"StatusbarShowSpaceInformation", NULL,
         N_("Show Space _Information"), NULL, NULL, G_CALLBACK(on_show_space_information), TRUE},
     {"StatusbarShowSpaceInformationInProgressBar", NULL,
-        N_("Show Space Information In _ProgressBar"), NULL, NULL, G_CALLBACK(on_show_space_information_in_progress_bar), FALSE}
+        N_("Show Space Information In _Progress Bar"), NULL, NULL, G_CALLBACK(on_show_space_information_in_progress_bar), FALSE}
 };
 
 static GtkRadioActionEntry main_win_mode_actions[]=
