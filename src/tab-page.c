@@ -444,16 +444,25 @@ static void on_folder_fs_info(FmFolder* folder, FmTabPage* page)
     char * msg = page->status_text[FM_STATUS_TEXT_FS_INFO];
     g_free(msg);
 
-    guint64 free, total;
-    if(fm_folder_get_filesystem_info(folder, &total, &free))
+    guint64 space_total, space_free, space_used;
+    if(fm_folder_get_filesystem_info(folder, &space_total, &space_free))
     {
-        page->volume_free_space_fraction = (double) free / (double) total;
+        if (space_free > space_total)
+            space_free = space_total;
+        space_used = space_total - space_free;
+
+        page->volume_free_space_fraction = (double) space_free / (double) space_total;
         page->volume_free_space_fraction = MIN(page->volume_free_space_fraction, 100);
-        char total_str[ 64 ];
-        char free_str[ 64 ];
-        fm_file_size_to_str(free_str, sizeof(free_str), free, fm_config->si_unit);
-        fm_file_size_to_str(total_str, sizeof(total_str), total, fm_config->si_unit);
-        msg = g_strdup_printf(_("Free %s of %s"), free_str, total_str );
+
+        char total_str[64];
+        char free_str[64];
+        char used_str[64];
+
+        fm_file_size_to_str(total_str, sizeof(total_str), space_total, fm_config->si_unit);
+        fm_file_size_to_str(free_str, sizeof(free_str), space_free, fm_config->si_unit);
+        fm_file_size_to_str(used_str, sizeof(free_str), space_used, fm_config->si_unit);
+
+        msg = g_strdup_printf(_("%s total: %s used, %s free"), total_str, used_str, free_str);
     }
     else
     {
