@@ -187,8 +187,7 @@ static GtkActionEntry main_win_actions[]=
         {"AsRoot", GTK_STOCK_DIALOG_AUTHENTICATION, N_("Open Current Folder as _Root"), "<Ctrl>P", NULL, G_CALLBACK(on_open_as_root)},
         {"Search", GTK_STOCK_FIND, N_("Fin_d Files..."), "<Ctrl><Shift>F", NULL, G_CALLBACK(on_search)},
     /* for accelerators */
-    {"Location", NULL, NULL, "<Alt>d", NULL, G_CALLBACK(on_location)},
-    {"Location2", NULL, NULL, "<Ctrl>L", NULL, G_CALLBACK(on_location)},
+    {"Location", NULL, NULL, "<Ctrl>L", NULL, G_CALLBACK(on_location)},
     {"Prev2", NULL, NULL, "XF86Back", NULL, G_CALLBACK(on_go_back)},
     {"Next2", NULL, NULL, "XF86Forward", NULL, G_CALLBACK(on_go_forward)},
     {"Reload2", NULL, NULL, "<Ctrl>R", NULL, G_CALLBACK(on_reload)},

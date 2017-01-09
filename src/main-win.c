@@ -918,7 +918,7 @@ static void on_key_nav_list(GtkAction* act, FmMainWin* win)
                            "F6: change focus Side pane <-> Folder view\n"
                            "F8: focus divider between Side pane and Folder view\n"
                            "F10: activate main menu\n"
-                           "Ctrl+L or Alt+D: jump focus to Path Bar"));
+                           "Ctrl+L: jump focus to Path Bar"));
         gtk_window_set_title(GTK_WINDOW(key_nav_list_dlg), _("Keyboard navigation"));
         g_signal_connect(key_nav_list_dlg, "response", G_CALLBACK(on_key_nav_list_response), (gpointer)&key_nav_list_dlg);
     }
