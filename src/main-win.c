@@ -205,7 +205,6 @@ static void fm_main_win_class_init(FmMainWinClass *klass)
 #endif
     g_object_class->finalize = fm_main_win_finalize;
 
-    widget_class = (GtkWidgetClass*)klass;
     widget_class->focus_in_event = on_focus_in;
     widget_class->key_press_event = on_key_press_event;
     widget_class->button_press_event = on_button_press_event;
