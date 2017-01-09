@@ -127,7 +127,6 @@ static const char main_menu_xml[] =
     "<toolitem action='Go'/>"
 "</toolbar>"
 "<accelerator action='Location'/>"
-"<accelerator action='Location2'/>"
 "<accelerator action='Prev2'/>"
 "<accelerator action='Next2'/>"
 "<accelerator action='Reload2'/>"
