@@ -203,7 +203,6 @@ static void fm_main_win_class_init(FmMainWinClass *klass)
     GtkObjectClass* gtk_object_class = GTK_OBJECT_CLASS(klass);
     gtk_object_class->destroy = fm_main_win_destroy;
 #endif
-    g_object_class = G_OBJECT_CLASS(klass);
     g_object_class->finalize = fm_main_win_finalize;
 
     widget_class = (GtkWidgetClass*)klass;
