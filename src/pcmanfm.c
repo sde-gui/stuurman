@@ -53,7 +53,7 @@ static int n_files_to_open = 0;
 static char* profile = NULL;
 static gboolean no_desktop = FALSE;
 /* static gboolean new_tab = FALSE; */
-static gint show_pref = -1;
+static gboolean preferences = FALSE;
 static gboolean new_win = FALSE;
 static gboolean find_files = FALSE;
 static char* ipc_cwd = NULL;
@@ -70,7 +70,7 @@ static GOptionEntry opt_entries[] =
     { "daemon-mode", 'd', 0, G_OPTION_ARG_NONE, &daemon_mode, N_("Run PCManFM as a daemon"), NULL },
     { "no-desktop", '\0', 0, G_OPTION_ARG_NONE, &no_desktop, N_("No function. Just to be compatible with nautilus"), NULL },
 
-    { "show-pref", '\0', 0, G_OPTION_ARG_INT, &show_pref, N_("Open Preferences dialog on the page N"), N_("N") },
+    { "preferences", '\0', 0, G_OPTION_ARG_NONE, &preferences, N_("Open Preferences dialog"), NULL },
     { "new-win", 'n', 0, G_OPTION_ARG_NONE, &new_win, N_("Open new window"), NULL },
     /* { "find-files", 'f', 0, G_OPTION_ARG_NONE, &find_files, N_("Open Find Files utility"), NULL }, */
     { "role", '\0', 0, G_OPTION_ARG_STRING, &window_role, N_("Window role for usage by window manager"), N_("ROLE") },
@@ -240,13 +240,13 @@ gboolean pcmanfm_run(gint screen_num)
     FmMainWin *win;
     gboolean ret = TRUE;
 
-    if(!files_to_open)
+    if (!files_to_open)
     {
-        if(show_pref > 0)
+        if (preferences)
         {
             /* FIXME: pass screen number from client */
-            fm_edit_preference(NULL, show_pref - 1);
-            show_pref = -1;
+            fm_edit_preference(NULL, 0);
+            preferences = FALSE;
             return TRUE;
         }
     }
