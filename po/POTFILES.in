@@ -7,3 +7,5 @@ src/main-win.c
 src/pcmanfm.c
 src/tab-page.c
 data/stuurman.desktop.in
+data/stuurman-folder-handler.desktop.in
+data/stuurman-preferences.desktop.in

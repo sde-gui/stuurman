@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Icon=user-desktop
+_Name=Stuurman Preferences
+_Comment=Configure the Stuurman file  manager
+Categories=Settings;GTK;DesktopSettings;
+TryExec=stuurman
+Exec=stuurman --preferences
+StartupNotify=true
+Terminal=false
