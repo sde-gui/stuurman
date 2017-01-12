@@ -1,11 +1,13 @@
 [Desktop Entry]
 Type=Application
 Icon=system-file-manager
-_Name=Stuurman File Manager
-_GenericName=File Manager
-_Comment=Browse the file system and manage the files
+_Name=Open Folder with Stuurman
+_GenericName=Open Folder
+_Comment=Open the specified folders in Stuurman
 Categories=FileManager;Utility;Core;GTK;
 TryExec=stuurman
 Exec=stuurman %U
 StartupNotify=true
 Terminal=false
+NoDisplay=true
+MimeType=inode/directory;
