@@ -3,12 +3,9 @@ Makefile.in*
 *~
 *.o
 
-aclocal.m4
-autom4te.cache
-depcomp
-install-sh
-ltmain.sh
-missing
+/aclocal.m4
+/autom4te.cache
+/build-aux
 compile
 config.*
 configure
