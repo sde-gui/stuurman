@@ -24,7 +24,7 @@
 
 #include <libsmfm-core/fm.h>
 
-FmNavHistory* overall_nav_history;
+extern FmNavHistory* overall_nav_history;
 
 void overall_nav_history_initialize(void);
 void save_overall_nav_history(void);
