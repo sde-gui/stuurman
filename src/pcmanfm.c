@@ -195,6 +195,7 @@ int main(int argc, char** argv)
     {
         GIOChannel* ch = g_io_channel_unix_new(signal_pipe[0]);
         g_io_add_watch(ch, G_IO_IN|G_IO_PRI, (GIOFunc)on_unix_signal, NULL);
+        g_io_channel_set_encoding(ch, NULL, NULL);
         g_io_channel_unref(ch);
 
         /* intercept signals */
