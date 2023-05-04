@@ -147,7 +147,7 @@ do_popup_menu(GtkWidget * widget, GtkWidget * menu, GdkEventButton * event)
 
 /* Managing visibility of toolbar/statusbar/menubar. */
 
-#define layout_XXX_set_visibility(name, widget) \
+#define layout_NAME_set_visibility(name, widget) \
 static void layout_##name##_set_visibility(FmMainWin * win, gboolean value)\
 {\
     g_return_if_fail(win && win->widget);\
@@ -164,9 +164,9 @@ static void on_show_##name(GtkToggleAction * action, FmMainWin * win)\
     layout_##name##_set_visibility(win, gtk_toggle_action_get_active(action));\
 }\
 
-layout_XXX_set_visibility(menubar, menubar)
-layout_XXX_set_visibility(toolbar, toolbar)
-layout_XXX_set_visibility(statusbar, statusbar.event_box)
+layout_NAME_set_visibility(menubar, menubar)
+layout_NAME_set_visibility(toolbar, toolbar)
+layout_NAME_set_visibility(statusbar, statusbar.event_box)
 
 void layout_visibility_initialize(FmMainWin* win)
 {
