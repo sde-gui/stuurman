@@ -630,7 +630,6 @@ static void fm_main_win_init(FmMainWin *win)
     GtkBox *vbox;
     GtkToolItem *toolitem;
     GtkUIManager* ui;
-    GtkActionGroup* action_group;
     GtkAction* act;
     GtkAccelGroup* accel_grp;
 
