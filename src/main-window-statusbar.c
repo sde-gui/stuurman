@@ -305,7 +305,7 @@ static void update_status(FmMainWin * win, guint type, const char*  status_text)
             gtk_statusbar_pop(win->statusbar.statusbar, win->statusbar.ctx);
             if (status_text)
                 gtk_statusbar_push(win->statusbar.statusbar, win->statusbar.ctx, status_text);
-            gtk_widget_set_tooltip_text(win->statusbar.statusbar, status_text);
+            gtk_widget_set_tooltip_text(GTK_WIDGET(win->statusbar.statusbar), status_text);
             break;
         }
         case FM_STATUS_TEXT_SELECTED_FILES:
@@ -313,7 +313,7 @@ static void update_status(FmMainWin * win, guint type, const char*  status_text)
             gtk_statusbar_pop(win->statusbar.statusbar, win->statusbar.ctx2);
             if (status_text)
                 gtk_statusbar_push(win->statusbar.statusbar, win->statusbar.ctx2, status_text);
-            gtk_widget_set_tooltip_text(win->statusbar.statusbar, status_text);
+            gtk_widget_set_tooltip_text(GTK_WIDGET(win->statusbar.statusbar), status_text);
             break;
         }
         case FM_STATUS_TEXT_FS_INFO:
@@ -369,7 +369,7 @@ static void update_statusbar(FmMainWin * win)
 
     const char * status_text;
 
-    gtk_widget_set_tooltip_text(win->statusbar.statusbar, "");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(win->statusbar.statusbar), "");
 
     status_text = fm_tab_page_get_status_text(page, FM_STATUS_TEXT_NORMAL);
     update_status(win, FM_STATUS_TEXT_NORMAL, status_text);
