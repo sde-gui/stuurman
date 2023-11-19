@@ -87,7 +87,7 @@ static void unix_signal_handler(int sig_num)
     /* postpond the signal handling by using a pipe */
     if (write(signal_pipe[1], &sig_num, sizeof(sig_num)) != sizeof(sig_num)) {
         g_critical("cannot bounce the signal, stop");
-        exit(2);
+        _exit(2);
     }
 }
 
@@ -293,8 +293,7 @@ gboolean pcmanfm_run(gint screen_num)
             if(cwd)
                 fm_path_unref(cwd);
             fm_launch_paths_simple(NULL, NULL, paths, pcmanfm_open_folder, NULL);
-            g_list_foreach(paths, (GFunc)fm_path_unref, NULL);
-            g_list_free(paths);
+            g_list_free_full(paths, (GDestroyNotify) fm_path_unref);
             ret = (n_pcmanfm_ref >= 1); /* if there is opened window, return true to run the main loop. */
 
             g_strfreev(files_to_open);
