@@ -217,7 +217,9 @@ int main(int argc, char** argv)
     {
         window_role = NULL; /* reset it for clients callbacks */
         fm_volume_manager_init();
+        GDK_THREADS_ENTER();
         gtk_main();
+        GDK_THREADS_LEAVE();
         /* g_debug("main loop ended"); */
 
         pcmanfm_save_config(TRUE);
@@ -385,7 +387,7 @@ void pcmanfm_save_config(gboolean immediate)
     {
         /* install an idle handler to save the config file. */
         if( 0 == save_config_idle)
-            save_config_idle = g_idle_add_full(G_PRIORITY_LOW, (GSourceFunc)on_save_config_idle, NULL, NULL);
+            save_config_idle = gdk_threads_add_idle_full(G_PRIORITY_LOW, (GSourceFunc)on_save_config_idle, NULL, NULL);
     }
 }
 
