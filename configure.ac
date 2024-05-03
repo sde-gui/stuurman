@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([stuurman], [1.1.0], [https://github.com/sde-gui/stuurman])
+AC_INIT([stuurman], [1.2.0-alpha1], [https://github.com/sde-gui/stuurman])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
