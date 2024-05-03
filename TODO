@@ -1,6 +1,3 @@
-Loadable modules:
-    support desktop painting module so there can be modules painting on the desktop window.
-
 Use fm_launch_paths for command line arguments handling.
 
-Add a new command line argument to change wallpaper mode.
+Add command-line option --check-running
