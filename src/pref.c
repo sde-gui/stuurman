@@ -296,6 +296,8 @@ void fm_edit_preference( GtkWindow* parent, int page )
         INIT_BOOL(builder, FmConfig, si_unit, NULL);
         INIT_BOOL(builder, FmConfig, backup_as_hidden, NULL);
 
+        INIT_BOOL(builder, FmConfig, app_list_smart_grouping, NULL);
+
         INIT_COMBO(builder, FmAppConfig, bm_open_method, NULL);
         INIT_COMBO(builder, FmAppConfig, view_mode, NULL);
 
