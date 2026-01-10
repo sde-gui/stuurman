@@ -197,8 +197,13 @@ SingleInstResult single_inst_init(SingleInstData* data)
     /* try to connect to existing instance */
     if(connect(data->sock, (struct sockaddr*)&addr, addr_len) == 0)
     {
-        /* connected successfully, pass args in opt_entries to server process as argv and exit. */
-        pass_args_to_existing_instance(data->opt_entries, data->screen_num, data->sock);
+        /* connected successfully...*/
+        if (!data->check_running) {
+            /* ... pass args in opt_entries to server process as argv and exit. */
+            int sock = data->sock;
+            data->sock = -1;
+            pass_args_to_existing_instance(data->opt_entries, data->screen_num, sock);
+        }
         return SINGLE_INST_CLIENT;
     }
 

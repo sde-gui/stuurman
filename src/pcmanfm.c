@@ -45,14 +45,16 @@
 #include "single-inst.h"
 
 static int signal_pipe[2] = {-1, -1};
-static gboolean daemon_mode = FALSE;
 static guint save_config_idle = 0;
 
 static char** files_to_open = NULL;
 static int n_files_to_open = 0;
 static char* profile = NULL;
-static gboolean no_desktop = FALSE;
+static char* instance_name = "stuurman";
+static gboolean no_remote = FALSE;
+static gboolean daemon_mode = FALSE;
 static gboolean check_running = FALSE;
+static gboolean no_desktop = FALSE;
 /* static gboolean new_tab = FALSE; */
 static gboolean preferences = FALSE;
 static gboolean new_win = FALSE;
@@ -68,14 +70,17 @@ static GOptionEntry opt_entries[] =
 {
     /* options only acceptable by first pcmanfm instance. These options are not passed through IPC */
     { "profile", 'p', 0, G_OPTION_ARG_STRING, &profile, N_("Name of configuration profile"), N_("PROFILE") },
-    { "daemon-mode", 'd', 0, G_OPTION_ARG_NONE, &daemon_mode, N_("Run PCManFM as a daemon"), NULL },
-    { "no-desktop", '\0', 0, G_OPTION_ARG_NONE, &no_desktop, N_("No function. Just to be compatible with nautilus"), NULL },
 
-    { "check-running", '\0', 0, G_OPTION_ARG_NONE, &check_running, N_("Check if an instance of stuurman-desktop is running. Exits with zero status if another copy of stuurman is running."), NULL },
+    { "no-remote", '\0', 0, G_OPTION_ARG_NONE, &no_remote, N_("Do not accept or send remote commands. Options --daemon-mode, --check-running and --instance are ignored."), NULL },
+    { "daemon-mode", 'd', 0, G_OPTION_ARG_NONE, &daemon_mode, N_("Run Stuurman as a daemon"), NULL },
+    { "check-running", '\0', 0, G_OPTION_ARG_NONE, &check_running, N_("Check if an instance of stuurman is running. Exits with zero status if another copy of stuurman is running."), NULL },
+    { "instance", '\0', 0, G_OPTION_ARG_STRING, &instance_name, N_("Daemon instance name to be used."), NULL },
+
     { "preferences", '\0', 0, G_OPTION_ARG_NONE, &preferences, N_("Open Preferences dialog"), NULL },
     { "new-win", 'n', 0, G_OPTION_ARG_NONE, &new_win, N_("Open new window"), NULL },
     /* { "find-files", 'f', 0, G_OPTION_ARG_NONE, &find_files, N_("Open Find Files utility"), NULL }, */
     { "role", '\0', 0, G_OPTION_ARG_STRING, &window_role, N_("Window role for usage by window manager"), N_("ROLE") },
+    { "no-desktop", '\0', 0, G_OPTION_ARG_NONE, &no_desktop, N_("No function. Just to be compatible with nautilus"), NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &files_to_open, NULL, N_("[FILE1, FILE2,...]")},
     { NULL }
 };
@@ -160,7 +165,8 @@ int main(int argc, char** argv)
 {
     FmConfig* config;
     GError* err = NULL;
-    SingleInstData inst;
+    SingleInstData single_inst;
+    gboolean single_inst_initilized = FALSE;
 
 #ifdef ENABLE_NLS
     bindtextdomain ( GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR );
@@ -176,25 +182,31 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    /* ensure that there is only one instance of pcmanfm. */
-    inst.prog_name = "stuurman";
-    inst.cb = single_inst_cb;
-    inst.opt_entries = opt_entries + 3;
-    inst.screen_num = gdk_x11_get_default_screen();
-    switch(single_inst_init(&inst))
-    {
-    case SINGLE_INST_CLIENT: /* we're not the first instance. */
-        single_inst_finalize(&inst);
-        gdk_notify_startup_complete();
-        return 0;
-    case SINGLE_INST_ERROR: /* error happened. */
-        single_inst_finalize(&inst);
-        return 1;
-    case SINGLE_INST_SERVER: ; /* FIXME */
-    }
+    if (!no_remote) {
+        /* ensure that there is only one instance of pcmanfm. */
+        single_inst.prog_name = instance_name;
+        single_inst.cb = single_inst_cb;
+        single_inst.opt_entries = opt_entries + 3;
+        single_inst.screen_num = gdk_x11_get_default_screen();
+        single_inst.check_running = check_running;
+        single_inst_initilized = TRUE;
+        switch(single_inst_init(&single_inst))
+        {
+        case SINGLE_INST_CLIENT: /* we're not the first instance. */
+            single_inst_finalize(&single_inst);
+            gdk_notify_startup_complete();
+            return 0;
+        case SINGLE_INST_ERROR: /* error happened. */
+            single_inst_finalize(&single_inst);
+            return 1;
+        case SINGLE_INST_SERVER: ; /* FIXME */
+        }
 
-    if (check_running)
-        return 1;
+        if (check_running)
+            return 1;
+    } else{
+        check_running = FALSE;
+    }
 
     if(pipe(signal_pipe) == 0)
     {
@@ -234,7 +246,8 @@ int main(int argc, char** argv)
         fm_volume_manager_finalize();
     }
 
-    single_inst_finalize(&inst);
+    if (single_inst_initilized)
+        single_inst_finalize(&single_inst);
     fm_gtk_finalize();
 
     g_object_unref(config);

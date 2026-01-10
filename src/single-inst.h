@@ -45,6 +45,7 @@ typedef struct
     SingleInstCallback cb;
     const GOptionEntry* opt_entries;
     int screen_num;
+    gboolean check_running;
     /* private */
     GIOChannel* io_channel;
     int sock;
