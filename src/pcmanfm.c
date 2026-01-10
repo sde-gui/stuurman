@@ -52,6 +52,7 @@ static char** files_to_open = NULL;
 static int n_files_to_open = 0;
 static char* profile = NULL;
 static gboolean no_desktop = FALSE;
+static gboolean check_running = FALSE;
 /* static gboolean new_tab = FALSE; */
 static gboolean preferences = FALSE;
 static gboolean new_win = FALSE;
@@ -70,6 +71,7 @@ static GOptionEntry opt_entries[] =
     { "daemon-mode", 'd', 0, G_OPTION_ARG_NONE, &daemon_mode, N_("Run PCManFM as a daemon"), NULL },
     { "no-desktop", '\0', 0, G_OPTION_ARG_NONE, &no_desktop, N_("No function. Just to be compatible with nautilus"), NULL },
 
+    { "check-running", '\0', 0, G_OPTION_ARG_NONE, &check_running, N_("Check if an instance of stuurman-desktop is running. Exits with zero status if another copy of stuurman is running."), NULL },
     { "preferences", '\0', 0, G_OPTION_ARG_NONE, &preferences, N_("Open Preferences dialog"), NULL },
     { "new-win", 'n', 0, G_OPTION_ARG_NONE, &new_win, N_("Open new window"), NULL },
     /* { "find-files", 'f', 0, G_OPTION_ARG_NONE, &find_files, N_("Open Find Files utility"), NULL }, */
@@ -191,6 +193,9 @@ int main(int argc, char** argv)
     case SINGLE_INST_SERVER: ; /* FIXME */
     }
 
+    if (check_running)
+        return 1;
+
     if(pipe(signal_pipe) == 0)
     {
         GIOChannel* ch = g_io_channel_unix_new(signal_pipe[0]);
@@ -240,6 +245,13 @@ gboolean pcmanfm_run(gint screen_num)
 {
     FmMainWin *win;
     gboolean ret = TRUE;
+
+    if (check_running)
+    {
+        /* Do nothing. */
+        check_running = FALSE;
+        return TRUE;
+    }
 
     if (!files_to_open)
     {

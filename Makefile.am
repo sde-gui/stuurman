@@ -4,3 +4,5 @@ SUBDIRS=src po data
 
 EXTRA_DIST = \
 	$(NULL)
+
+ACLOCAL_AMFLAGS =  -I m4
